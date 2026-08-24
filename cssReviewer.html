@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Review</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#11161d;
+    --line:#1f2733;
+    --text:#e6edf3;
+    --muted:#7d8a9c;
+    --tag:#4d9bff;
+    --good:#3ddc97;
+    --bad:#ff5d5d;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Consolas','SFMono-Regular',Menlo,monospace;
+    display:flex;
+    justify-content:center;
+    padding:48px 20px 80px;
+  }
+  .wrap{width:100%; max-width:640px;}
+  .eyebrow{
+    color:var(--tag);
+    letter-spacing:.12em;
+    font-size:13px;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{
+    font-size:28px;
+    margin:0 0 6px;
+    font-weight:700;
+  }
+  h1 span{color:var(--tag);}
+  .sub{
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:32px;
+    line-height:1.5;
+  }
+  .recap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--tag);
+    border-radius:6px;
+    padding:20px 22px;
+    margin-bottom:32px;
+    font-size:14px;
+    line-height:1.7;
+  }
+  .recap code{
+    background:#1b232e;
+    padding:1px 6px;
+    border-radius:4px;
+    color:#9cc5ff;
+  }
+  .recap ul{margin:10px 0 0; padding-left:18px;}
+  .recap li{margin-bottom:6px;}
+
+  .qcount{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  .question{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px 22px;
+    margin-bottom:16px;
+  }
+  .question p{
+    margin:0 0 14px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .options{display:flex; flex-direction:column; gap:8px;}
+  .opt{
+    text-align:left;
+    background:#161c25;
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:5px;
+    font-family:inherit;
+    font-size:14px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color:#3a4759;}
+  .opt.correct{
+    border-color:var(--good);
+    background:rgba(61,220,151,0.08);
+    color:var(--good);
+  }
+  .opt.incorrect{
+    border-color:var(--bad);
+    background:rgba(255,93,93,0.08);
+    color:var(--bad);
+  }
+  .opt:disabled{cursor:default;}
+
+  .score-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:14px 20px;
+    margin:28px 0;
+    font-size:14px;
+  }
+  .score-bar strong{color:var(--tag);}
+
+  .proceed{
+    display:block;
+    width:100%;
+    text-align:center;
+    text-decoration:none;
+    background:var(--tag);
+    color:#04111f;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.02em;
+    padding:16px;
+    border-radius:6px;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .proceed:hover{opacity:.9; transform:translateY(-1px);}
+  .proceed:active{transform:translateY(0);}
+  .proceed:focus-visible{outline:2px solid var(--text); outline-offset:3px;}
+  .proceed.locked{
+    pointer-events:none;
+    opacity:.4;
+    background:#2a3441;
+    color:var(--muted);
+  }
+
+  .hint{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Before you begin</div>
+  <h1>CSS <span>Review</span></h1>
+  <p class="sub">A quick recap, then a few questions to check what stuck. Answer them, then proceed to the game.</p>
+
+  <div class="recap">
+    <strong>Quick recap</strong>
+    <ul>
+      <li>CSS (Cascading Style Sheets) controls the presentation of HTML &mdash; colors, layout, spacing, fonts.</li>
+      <li>Selectors target elements: <code>.class</code>, <code>#id</code>, <code>tag</code>, and combinators like <code>div &gt; p</code>.</li>
+      <li>Every element is a box: <code>content</code>, wrapped by <code>padding</code>, <code>border</code>, then <code>margin</code>.</li>
+      <li>The "cascade" resolves conflicts using source order, specificity, and <code>!important</code>.</li>
+      <li>Modern layout tools include <code>display: flex</code> and <code>display: grid</code> for arranging elements.</li>
+    </ul>
+  </div>
+
+  <div class="qcount">Quiz &mdash; <span id="scoreLive">0</span> / <span id="totalQ">4</span> correct</div>
+
+  <div class="question" data-q="1">
+    <p>1. Which CSS rule correctly targets all elements with the class "card"?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">#card { }</button>
+      <button class="opt" data-correct="true">.card { }</button>
+      <button class="opt" data-correct="false">*card { }</button>
+      <button class="opt" data-correct="false">card* { }</button>
+    </div>
+  </div>
+
+  <div class="question" data-q="2">
+    <p>2. In the CSS box model, which layer sits directly outside the border?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">content</button>
+      <button class="opt" data-correct="false">padding</button>
+      <button class="opt" data-correct="true">margin</button>
+      <button class="opt" data-correct="false">outline</button>
+    </div>
+  </div>
+
+  <div class="question" data-q="3">
+    <p>3. Which property turns an element into a flex container?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">position: flex;</button>
+      <button class="opt" data-correct="false">layout: flex;</button>
+      <button class="opt" data-correct="true">display: flex;</button>
+      <button class="opt" data-correct="false">flex: container;</button>
+    </div>
+  </div>
+
+  <div class="question" data-q="4">
+    <p>4. Given equal specificity, which rule wins the cascade?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">The one written first</button>
+      <button class="opt" data-correct="true">The one written last</button>
+      <button class="opt" data-correct="false">The one with the longest selector</button>
+      <button class="opt" data-correct="false">The one inside a media query</button>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    Score: <strong><span id="scoreFinal">0</span> / 4</strong>
+  </div>
+
+  <a href="dragoncss-1.html" class="proceed locked" id="proceedBtn">Answer all questions to continue</a>
+  <p class="hint">Selecting an option locks that question in &mdash; choose carefully.</p>
+
+</div>
+
+<script>
+  const total = document.querySelectorAll('.question').length;
+  let answered = 0;
+  let score = 0;
+
+  document.getElementById('totalQ').textContent = total;
+
+  document.querySelectorAll('.question').forEach(q => {
+    const opts = q.querySelectorAll('.opt');
+    opts.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (q.dataset.answered === 'true') return;
+        q.dataset.answered = 'true';
+        answered++;
+
+        const isCorrect = btn.dataset.correct === 'true';
+        if (isCorrect) {
+          btn.classList.add('correct');
+          score++;
+        } else {
+          btn.classList.add('incorrect');
+          const correctBtn = [...opts].find(o => o.dataset.correct === 'true');
+          if (correctBtn) correctBtn.classList.add('correct');
+        }
+
+        opts.forEach(o => o.disabled = true);
+
+        document.getElementById('scoreLive').textContent = score;
+        document.getElementById('scoreFinal').textContent = score;
+
+        if (answered === total) {
+          const proceed = document.getElementById('proceedBtn');
+          proceed.classList.remove('locked');
+          proceed.textContent = 'Proceed to the game';
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
+

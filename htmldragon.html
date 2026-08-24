@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Dragon Quiz Battle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{position:relative;background:radial-gradient(ellipse at 50% 100%,#3a0f04 0%,#1a0805 35%,#0d0816 75%);font-family:'Cinzel',serif;color:#e8ddf5;min-height:600px}
+#root{display:flex;flex-direction:column;gap:14px;padding:16px;max-width:860px;margin:0 auto}
+h1{font-family:'Cinzel Decorative',cursive;font-size:clamp(1rem,3.5vw,1.6rem);color:#ffd54f;text-align:center;letter-spacing:2px;text-shadow:0 0 20px #ffd54f66}
+
+.battlefield{position:relative;background:linear-gradient(180deg,#170a10 0%,#2b0f08 32%,#3f1206 58%,#5a1806 78%,#7a2408 100%);border:1.5px solid #6a2a10;border-radius:16px;padding:18px 16px 0 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;box-shadow:inset 0 -40px 70px -20px #ff5a1e55}
+
+/* distant volcano scene, sits behind everything */
+.volcano-bg{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.9}
+.volcano-bg svg{width:100%;height:100%;display:block}
+.glow-pulse{animation:glowPulse 3.4s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{opacity:.65}50%{opacity:1}}
+.crater-flicker{animation:craterFlicker 2.2s ease-in-out infinite}
+@keyframes craterFlicker{0%,100%{opacity:.85;transform:translateY(0)}50%{opacity:1;transform:translateY(-1.5px)}}
+.smoke-drift{animation:smokeDrift 8s ease-in-out infinite;transform-origin:center}
+@keyframes smokeDrift{0%{transform:translateY(0) translateX(0) scale(1);opacity:.32}50%{transform:translateY(-30px) translateX(8px) scale(1.15);opacity:.14}100%{transform:translateY(-70px) translateX(-5px) scale(1.3);opacity:0}}
+.smoke-drift.s2{animation-delay:2.6s}
+.smoke-drift.s3{animation-delay:5.2s}
+
+/* cracked lava floor the dragons stand on */
+.lava-floor{position:relative;z-index:1;height:30px;margin:0 -16px;background:
+  linear-gradient(180deg,#1a0906 0%,#0d0504 100%);
+  border-top:2px solid #ff6d1e88;
+  box-shadow:0 -10px 26px -6px #ff6d1e77, inset 0 3px 10px #000a;
+  overflow:hidden}
+.lava-floor svg{display:block;width:100%;height:100%}
+.crack-glow{animation:crackGlow 2.6s ease-in-out infinite}
+@keyframes crackGlow{0%,100%{opacity:.75}50%{opacity:1}}
+.crack-glow.c2{animation-delay:.6s}
+.crack-glow.c3{animation-delay:1.3s}
+.crack-glow.c4{animation-delay:1.9s}
+
+/* ambient embers */
+.ember{position:absolute;bottom:6px;width:4px;height:4px;border-radius:50%;background:#ffd54f;box-shadow:0 0 6px 2px #ffd54f99;opacity:0;pointer-events:none;animation:ember-float 6s linear infinite;z-index:2}
+@keyframes ember-float{0%{opacity:0;transform:translate(0,0) scale(.8)}10%{opacity:.85}85%{opacity:.3}100%{opacity:0;transform:translate(var(--dx,10px),-140px) scale(.4)}}
+
+/* HP rows */
+.hp-row{display:flex;gap:12px;align-items:center;position:relative;z-index:2}
+.hp-row .label{font-size:.65rem;letter-spacing:1.2px;font-weight:600;white-space:nowrap}
+.label.p{color:#4fc3f7}.label.e{color:#ef5350}
+.hp-track{flex:1;height:13px;background:#1e1535;border-radius:6px;overflow:hidden;border:1px solid #3a2860}
+.hp-track.flash{animation:hpflash .4s ease}
+@keyframes hpflash{0%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 16px 5px #ff5252cc}100%{box-shadow:0 0 0 0 transparent}}
+.hp-fill{height:100%;border-radius:6px;transition:width .5s ease,background .5s}
+.hp-fill.p{background:linear-gradient(90deg,#1565c0,#4fc3f7)}
+.hp-fill.e{background:linear-gradient(90deg,#b71c1c,#ef5350)}
+.hp-num{font-size:.65rem;color:#9e8cc0;white-space:nowrap;min-width:52px;text-align:right}
+.hp-num.e{text-align:left}
+
+/* Arena row — dragons + VS in middle */
+.arena{position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:8px 6px 4px 6px;z-index:2}
+.corner{display:flex;flex-direction:column;align-items:center;gap:6px}
+.corner-name{font-size:.68rem;letter-spacing:1.2px;font-weight:600}
+.corner-name.p{color:#4fc3f7}.corner-name.e{color:#ef5350}
+.dragon-wrap{position:relative;width:clamp(90px,13vw,130px);height:clamp(90px,13vw,130px);z-index:2}
+svg.dragon{width:100%;height:100%}
+
+@keyframes idle-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes shake-hard{
+  0%,100%{transform:translateX(0) translateY(0)}
+  10%{transform:translateX(-10px) translateY(-2px)}
+  25%{transform:translateX(10px) translateY(3px)}
+  40%{transform:translateX(-8px) translateY(-3px)}
+  55%{transform:translateX(8px) translateY(2px)}
+  70%{transform:translateX(-5px) translateY(-1px)}
+  85%{transform:translateX(5px) translateY(2px)}
+}
+@keyframes fire-p{0%,100%{opacity:0;transform:scaleX(0)}50%{opacity:1;transform:scaleX(1)}}
+@keyframes fire-e{0%,100%{opacity:0;transform:scaleX(0)}50%{opacity:1;transform:scaleX(1)}}
+
+.dragon-wrap{animation:idle-float 3s ease-in-out infinite}
+.dragon-wrap.shaking{animation:shake-hard .55s ease!important}
+
+/* fire bursts (muzzle flash at mouth) */
+.fire-p{position:absolute;top:38%;right:-42px;width:44px;height:14px;border-radius:50%;opacity:0;transform-origin:left center;background:radial-gradient(ellipse at left,#ffd54f,#ff6f00,transparent);z-index:3}
+.fire-e{position:absolute;top:38%;left:-42px;width:44px;height:14px;border-radius:50%;opacity:0;transform-origin:right center;background:radial-gradient(ellipse at right,#ffd54f,#ff6f00,transparent);z-index:3}
+.fire-p.shoot{animation:fire-p .6s ease forwards}
+.fire-e.shoot{animation:fire-e .6s ease forwards}
+
+/* traveling fireball projectile */
+.fireball{position:absolute;top:0;left:0;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff59d,#ff9800 45%,#e65100 80%);box-shadow:0 0 20px 7px #ff6f00bb,0 0 8px #ffd54f;z-index:5;pointer-events:none}
+.fireball-trail{position:absolute;top:0;left:0;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#ff9800aa,transparent 70%);z-index:4;pointer-events:none}
+
+/* execution finisher: giant nuke fireball + shockwave */
+.nuke-ball{position:absolute;top:0;left:0;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffde7,#ffca28 35%,#ff6d00 65%,#bf360c 90%);box-shadow:0 0 30px 10px #ff6d00cc,0 0 60px 22px #ff3d0088;z-index:8;pointer-events:none}
+.shockwave{position:absolute;top:50%;left:50%;width:20px;height:20px;border-radius:50%;border:4px solid #ffab40;box-shadow:0 0 30px 10px #ff6d0099;pointer-events:none;z-index:9}
+
+/* slash impact mark */
+.slash-mark-base{position:absolute;top:50%;left:50%;width:150%;height:6px;background:linear-gradient(90deg,transparent,#fff,#fff,transparent);box-shadow:0 0 14px 3px #ffffffcc;pointer-events:none;z-index:6}
+
+/* bite impact mark (teeth) */
+.bite-mark{position:absolute;top:50%;left:50%;pointer-events:none;z-index:6;filter:drop-shadow(0 0 4px #ffffffaa)}
+
+/* lightning bolt strike */
+.lightning-bolt{position:absolute;pointer-events:none;z-index:7;transform-origin:top center}
+.strike-flash{position:absolute;top:35%;left:50%;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#fff9c4,#ffd54f88,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;z-index:7}
+
+/* impact sparks */
+.impact-spark{position:absolute;top:50%;left:50%;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:8}
+
+/* floating damage numbers */
+.dmg-num{position:absolute;top:30%;left:50%;font-family:'Cinzel Decorative',cursive;font-size:1.3rem;font-weight:900;color:#fff3e0;text-shadow:0 0 6px #ff1744,0 0 16px #000,0 0 2px #000;pointer-events:none;z-index:20;white-space:nowrap}
+
+/* KO + execution finisher */
+.ko-banner{position:absolute;top:50%;left:50%;width:92%;transform:translate(-50%,-50%) scale(.3);font-family:'Cinzel Decorative',cursive;font-size:clamp(2.2rem,13vw,6rem);color:#fff3e0;text-align:center;white-space:nowrap;letter-spacing:14px;padding:14px 0;background:linear-gradient(90deg,transparent,#4a000faa 18%,#7f0010cc 50%,#4a000faa 82%,transparent);border-top:2px solid #ff174499;border-bottom:2px solid #ff174499;text-shadow:0 0 20px #ff1744,0 0 50px #ff1744,0 0 90px #ff174488;opacity:0;z-index:150;pointer-events:none}
+.ko-banner.show{animation:ko-pop 1.1s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes ko-pop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-8deg)}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(3deg)}
+  30%{transform:translate(-50%,-50%) scale(.96) rotate(-2deg)}
+  42%{transform:translate(-50%,-50%) scale(1.03) rotate(1deg)}
+  82%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.15) rotate(0)}
+}
+.exec-flash{position:absolute;inset:0;background:radial-gradient(circle at center,#ff174455,transparent 70%);opacity:0;z-index:140;pointer-events:none}
+.exec-flash.show{animation:exec-flash-anim .5s ease forwards}
+@keyframes exec-flash-anim{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+
+.vs-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding-bottom:10px}
+.vs-text{font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#ffd54f;text-shadow:0 0 12px #ffd54f66}
+
+.log-box{background:#1a1230;border:1px solid #3a2860;border-radius:10px;padding:10px 14px;font-size:.78rem;min-height:44px;line-height:1.7;color:#9e8cc0}
+.log-good{color:#66bb6a}.log-bad{color:#ef5350}.log-info{color:#ffd54f}
+.atk-btn{align-self:center;padding:12px 36px;font-family:'Cinzel Decorative',cursive;font-size:.9rem;background:linear-gradient(135deg,#6a1b9a,#4527a0);color:#ffd54f;border:2px solid #7c43bd;border-radius:50px;cursor:pointer;letter-spacing:1.5px;transition:transform .15s,box-shadow .15s,opacity .3s;box-shadow:0 4px 20px #4527a055}
+.atk-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px #7c43bd88}
+.atk-btn:disabled{opacity:.35;cursor:default}
+
+.overlay{position:fixed;inset:0;background:#0d081699;display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#1a1230;border:2px solid #7c43bd;border-radius:18px;padding:28px 30px;width:min(500px,92%);display:flex;flex-direction:column;gap:14px;box-shadow:0 0 50px #4527a077;animation:pop .22s ease}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{font-family:'Cinzel Decorative',cursive;color:#ffd54f;font-size:.9rem;text-align:center}
+.timer-track{background:#1e1535;border-radius:5px;height:7px;overflow:hidden}
+.timer-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#ffd54f,#ff8f00);transition:width .1s linear}
+.q-text{font-size:.88rem;color:#e8ddf5;line-height:1.65;text-align:center}
+.code-snippet{background:#0d0816;border:1px solid #3a2860;border-radius:6px;padding:8px 12px;font-family:monospace;font-size:.78rem;color:#80cbc4;white-space:pre-wrap}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{padding:11px 8px;font-family:'Cinzel',serif;font-size:.78rem;background:#211540;color:#c9bde8;border:1.5px solid #3a2860;border-radius:9px;cursor:pointer;transition:background .15s,border-color .15s;text-align:center}
+.opt:hover{background:#3b2d55;border-color:#7c43bd}
+.opt.correct{background:#1b4f2a;border-color:#66bb6a;color:#66bb6a}
+.opt.wrong{background:#4a1414;border-color:#ef5350;color:#ef5350}
+.endscreen{position:fixed;inset:0;background:#0d0816cc;display:flex;align-items:center;justify-content:center;z-index:200}
+.end-box{background:#1a1230;border:2px solid #ffd54f;border-radius:18px;padding:36px 44px;text-align:center;display:flex;flex-direction:column;gap:18px;animation:pop .3s ease}
+.end-title{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,4vw,2rem);color:#ffd54f}
+.end-msg{font-size:.85rem;color:#9e8cc0}
+.restart{padding:12px 32px;font-family:'Cinzel Decorative',cursive;font-size:.85rem;background:linear-gradient(135deg,#6a1b9a,#4527a0);color:#ffd54f;border:2px solid #7c43bd;border-radius:50px;cursor:pointer;letter-spacing:1px}
+
+/* Difficulty selection screen */
+.diff-overlay{z-index:300;background:#08050fdd}
+.diff-modal{width:min(460px,92%);align-items:stretch}
+.diff-modal h2{font-size:1rem;margin-bottom:4px}
+.diff-sub{font-size:.72rem;color:#9e8cc0;text-align:center;line-height:1.5;margin-top:-6px}
+.diff-options{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.diff-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-radius:12px;border:2px solid;cursor:pointer;background:#1a1230;font-family:'Cinzel',serif;text-align:left;transition:transform .15s,box-shadow .15s}
+.diff-card:hover{transform:translateY(-2px)}
+.diff-card .diff-name{font-family:'Cinzel Decorative',cursive;font-size:.95rem;letter-spacing:1.5px}
+.diff-card .diff-desc{font-size:.68rem;color:#9e8cc0;margin-top:3px;letter-spacing:.4px}
+.diff-card .diff-icon{font-size:1.6rem;line-height:1}
+.diff-card.easy{border-color:#4fc3f7}
+.diff-card.easy:hover{box-shadow:0 6px 22px #4fc3f766}
+.diff-card.easy .diff-name{color:#4fc3f7}
+.diff-card.medium{border-color:#ffb74d}
+.diff-card.medium:hover{box-shadow:0 6px 22px #ffb74d66}
+.diff-card.medium .diff-name{color:#ffb74d}
+.diff-card.hard{border-color:#ef5350}
+.diff-card.hard:hover{box-shadow:0 6px 22px #ef535066}
+.diff-card.hard .diff-name{color:#ef5350}
+
+/* bigger enemy for hard mode */
+.dragon-wrap.big{width:clamp(115px,16vw,168px);height:clamp(115px,16vw,168px)}
+</style>
+</head>
+<body>
+
+<div id="root">
+  <h1>⚔️ CSS Dragon Quiz Battle ⚔️</h1>
+  <div class="battlefield">
+
+    <!-- Volcanic wasteland backdrop -->
+    <div class="volcano-bg">
+      <svg viewBox="0 0 800 300" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="bgGlow" cx="50%" cy="18%" r="60%">
+            <stop offset="0%" stop-color="#ffb74d" stop-opacity=".55"/>
+            <stop offset="45%" stop-color="#ff6d1e" stop-opacity=".28"/>
+            <stop offset="100%" stop-color="#ff6d1e" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="volcMtn" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2a120a"/>
+            <stop offset="100%" stop-color="#140705"/>
+          </linearGradient>
+          <linearGradient id="lavaVein" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fff3c0"/>
+            <stop offset="35%" stop-color="#ffab40"/>
+            <stop offset="75%" stop-color="#ff5722"/>
+            <stop offset="100%" stop-color="#bf360c"/>
+          </linearGradient>
+        </defs>
+        <!-- glow behind volcano -->
+        <ellipse class="glow-pulse" cx="400" cy="40" rx="340" ry="140" fill="url(#bgGlow)"/>
+        <!-- distant cracked wasteland silhouette hills -->
+        <path d="M0,150 L70,120 L140,145 L220,110 L300,140 L380,115 L460,142 L540,112 L620,138 L700,118 L800,145 L800,300 L0,300 Z" fill="#1c0c08" opacity=".8"/>
+        <!-- main volcano -->
+        <path d="M400,10 L520,180 L280,180 Z" fill="url(#volcMtn)" stroke="#000" stroke-width="1.5"/>
+        <path d="M400,10 L445,90 L355,90 Z" fill="#3a1508"/>
+        <!-- crater lava pool -->
+        <ellipse class="crater-flicker" cx="400" cy="16" rx="30" ry="8" fill="url(#lavaVein)"/>
+        <!-- lava cracks down the cone -->
+        <g class="crater-flicker" fill="none" stroke-linecap="round">
+          <path d="M400,22 C392,55 402,80 388,110 C378,132 392,150 380,175" stroke="url(#lavaVein)" stroke-width="4"/>
+          <path d="M406,24 C415,58 404,82 418,112 C428,134 412,152 424,175" stroke="url(#lavaVein)" stroke-width="3"/>
+        </g>
+        <!-- smoke -->
+        <ellipse class="smoke-drift" cx="392" cy="6" rx="18" ry="10" fill="#241512" opacity=".4"/>
+        <ellipse class="smoke-drift s2" cx="406" cy="4" rx="14" ry="8" fill="#241512" opacity=".35"/>
+        <ellipse class="smoke-drift s3" cx="400" cy="8" rx="22" ry="12" fill="#241512" opacity=".3"/>
+      </svg>
+    </div>
+
+    <div class="ember" style="left:8%;animation-delay:0s;--dx:14px"></div>
+    <div class="ember" style="left:22%;animation-delay:1.4s;--dx:-10px"></div>
+    <div class="ember" style="left:38%;animation-delay:2.6s;--dx:8px"></div>
+    <div class="ember" style="left:55%;animation-delay:.8s;--dx:-14px"></div>
+    <div class="ember" style="left:70%;animation-delay:3.4s;--dx:10px"></div>
+    <div class="ember" style="left:85%;animation-delay:2s;--dx:-8px"></div>
+    <div class="ember" style="left:93%;animation-delay:4.2s;--dx:12px"></div>
+
+    <!-- Player HP top -->
+    <div class="hp-row">
+      <span class="label p">🔵 YOUR DRAGON</span>
+      <div class="hp-track" id="php-track"><div class="hp-fill p" id="php" style="width:100%"></div></div>
+      <span class="hp-num" id="php-txt">100/100</span>
+    </div>
+
+    <!-- Arena -->
+    <div class="arena">
+      <!-- Player corner — faces RIGHT (default SVG direction) -->
+      <div class="corner">
+        <div class="dragon-wrap" id="pdw">
+          <svg class="dragon" viewBox="-20 -20 190 190" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="pb" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#42a5f5"/><stop offset="100%" stop-color="#0d47a1"/></radialGradient>
+              <radialGradient id="ph" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#64b5f6"/><stop offset="100%" stop-color="#1565c0"/></radialGradient>
+              <radialGradient id="pw" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#1a237e" stop-opacity=".9"/><stop offset="100%" stop-color="#0d1a6e"/></radialGradient>
+              <radialGradient id="psc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#90caf9"/><stop offset="100%" stop-color="#42a5f5"/></radialGradient>
+            </defs>
+            <!-- tail goes LEFT, long & spiked -->
+            <path d="M45,90 Q22,98 12,112 Q3,124 -6,138 Q-2,148 6,144 Q10,136 16,126 Q24,112 32,102 Q38,96 45,95 Z" fill="#1565c0" stroke="#0d47a1" stroke-width="1"/>
+            <path d="M-6,138 L-16,146 L-4,150 Z" fill="#64b5f6"/>
+            <polygon points="30,100 28,92 25,101" fill="#64b5f6" opacity=".8"/>
+            <polygon points="18,112 16,104 13,113" fill="#64b5f6" opacity=".7"/>
+            <polygon points="6,126 4,118 1,127" fill="#64b5f6" opacity=".6"/>
+            <!-- body -->
+            <ellipse cx="68" cy="85" rx="36" ry="26" fill="url(#pb)" stroke="#0d47a1" stroke-width="1"/>
+            <ellipse cx="68" cy="90" rx="22" ry="16" fill="#bbdefb" opacity=".3"/>
+            <!-- scales -->
+            <circle cx="54" cy="75" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+            <circle cx="66" cy="70" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+            <circle cx="78" cy="75" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+            <circle cx="60" cy="83" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+            <circle cx="72" cy="82" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+            <circle cx="84" cy="79" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+            <!-- neck -->
+            <path d="M88,72 Q92,58 96,50 Q92,48 84,52 Q82,62 80,72 Z" fill="url(#ph)" stroke="#1565c0" stroke-width=".8"/>
+            <!-- wings, wide with jagged fingertips -->
+            <path d="M75,72 Q95,42 112,22 L120,14 Q114,28 108,38 L128,26 Q118,42 108,52 Q96,68 80,72 Z" fill="url(#pw)" stroke="#0d47a1" stroke-width=".8"/>
+            <path d="M120,14 L124,9 M120,14 L129,17 M128,26 L134,24 M108,52 L113,49" stroke="#283593" stroke-width=".7" fill="none"/>
+            <path d="M62,68 Q38,36 18,16 L10,6 Q16,22 22,32 L2,18 Q12,36 24,48 Q42,64 60,70 Z" fill="url(#pw)" stroke="#0d47a1" stroke-width=".8"/>
+            <path d="M10,6 L14,1 M10,6 L18,10 M2,18 L-3,15 M22,32 L26,28" stroke="#283593" stroke-width=".7" fill="none"/>
+            <!-- head faces RIGHT -->
+            <ellipse cx="98" cy="42" rx="18" ry="14" fill="url(#ph)" stroke="#1565c0" stroke-width="1"/>
+            <circle cx="104" cy="36" r="3.5" fill="none" stroke="#1976d2" stroke-width=".7" opacity=".7"/>
+            <circle cx="94" cy="34" r="3" fill="none" stroke="#1976d2" stroke-width=".7" opacity=".7"/>
+            <!-- snout right -->
+            <ellipse cx="113" cy="47" rx="11" ry="7" fill="#1976d2" stroke="#1565c0" stroke-width=".8"/>
+            <ellipse cx="113" cy="47" rx="7" ry="4" fill="#42a5f5" opacity=".4"/>
+            <ellipse cx="118" cy="46" rx="1.8" ry="1.2" fill="#0d47a1"/>
+            <ellipse cx="113" cy="47.5" rx="1.5" ry="1" fill="#0d47a1"/>
+            <!-- eye right -->
+            <ellipse cx="102" cy="37" rx="5.5" ry="4.5" fill="#fff" stroke="#1565c0" stroke-width=".8"/>
+            <ellipse cx="102.5" cy="37" rx="3" ry="3.5" fill="#1a237e"/>
+            <ellipse cx="103.5" cy="35.5" rx="1.2" ry="1.5" fill="#4fc3f7"/>
+            <circle cx="104" cy="35" r=".8" fill="#fff"/>
+            <path d="M97.5,34 Q102,31 107.5,34" stroke="#1565c0" stroke-width="1" fill="none"/>
+            <!-- horns right -->
+            <path d="M100,28 Q103,18 99,10 Q96,18 97,28" fill="url(#psc)" stroke="#90caf9" stroke-width=".5"/>
+            <path d="M92,26 Q93,19 89,14 Q87,20 88,27" fill="#64b5f6" stroke="#90caf9" stroke-width=".5"/>
+            <path d="M96,33 Q102,30 108,32" stroke="#0d47a1" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- mouth right -->
+            <path d="M123,50 Q118,55 108,52" stroke="#0d47a1" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <polygon points="120,51 118,55 116,51" fill="#e3f2fd" opacity=".9"/>
+            <polygon points="115,51.5 113,54.5 111,51.5" fill="#e3f2fd" opacity=".9"/>
+            <!-- spine spikes, taller & more numerous -->
+            <polygon points="88,64 85,46 81,64" fill="#64b5f6" opacity=".85"/>
+            <polygon points="78,66 75,50 71,66" fill="#64b5f6" opacity=".8"/>
+            <polygon points="68,68 65,53 61,68" fill="#64b5f6" opacity=".75"/>
+            <polygon points="58,70 56,57 52,70" fill="#64b5f6" opacity=".7"/>
+            <polygon points="49,72 47,60 44,72" fill="#64b5f6" opacity=".65"/>
+            <polygon points="41,74 39,63 37,74" fill="#64b5f6" opacity=".6"/>
+            <!-- legs -->
+            <path d="M82,105 Q86,115 90,120 Q84,122 78,118 Q78,112 78,105 Z" fill="#1976d2" stroke="#1565c0" stroke-width=".8"/>
+            <path d="M90,120 L93,125 M87,121 L89,126 M83,121 L84,126" stroke="#90caf9" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M58,108 Q60,118 62,123 Q56,124 52,120 Q54,114 55,108 Z" fill="#1976d2" stroke="#1565c0" stroke-width=".8"/>
+            <path d="M62,123 L64,128 M59,124 L60,129 M55,123 L55,128" stroke="#90caf9" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          <div class="fire-p" id="p-fire"></div>
+        </div>
+      </div>
+
+      <!-- VS middle -->
+      <div class="vs-mid">
+        <span class="vs-text">VS</span>
+      </div>
+
+      <!-- Enemy corner — faces LEFT (mirrored), content swapped by difficulty -->
+      <div class="corner">
+        <div class="dragon-wrap" id="edw">
+          <div id="edw-svg-holder" style="width:100%;height:100%"></div>
+          <div class="fire-e" id="e-fire"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cracked lava floor the dragons stand on -->
+    <div class="lava-floor">
+      <svg viewBox="0 0 800 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="floorLava" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fff3c0"/>
+            <stop offset="30%" stop-color="#ffab40"/>
+            <stop offset="70%" stop-color="#ff5722"/>
+            <stop offset="100%" stop-color="#8d2b0a"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="800" height="30" fill="#0d0504"/>
+        <path class="crack-glow c1" d="M0,10 L60,14 L110,8 L170,16 L230,9 L290,15" fill="none" stroke="url(#floorLava)" stroke-width="2.4"/>
+        <path class="crack-glow c2" d="M320,12 L370,18 L420,10 L470,17 L520,11 L580,16" fill="none" stroke="url(#floorLava)" stroke-width="2.4"/>
+        <path class="crack-glow c3" d="M600,9 L650,15 L700,8 L750,14 L800,10" fill="none" stroke="url(#floorLava)" stroke-width="2.4"/>
+        <path class="crack-glow c4" d="M120,20 L160,25 L200,19 L250,24 L300,20 M420,20 L460,25 L500,19 L560,24 L610,20" fill="none" stroke="url(#floorLava)" stroke-width="1.6" opacity=".8"/>
+      </svg>
+    </div>
+
+    <!-- Enemy HP bottom -->
+    <div class="hp-row">
+      <span class="label e" id="enemy-label">🔴 ENEMY DRAGON</span>
+      <div class="hp-track" id="ehp-track"><div class="hp-fill e" id="ehp" style="width:100%"></div></div>
+      <span class="hp-num e" id="ehp-txt">100/100</span>
+    </div>
+
+  </div>
+
+  <div class="log-box" id="log"><span class="log-info">⚔️ The Html battle begins! Attack to summon a challenge!</span></div>
+  <button class="atk-btn" id="atk" onclick="openQ()" disabled>⚡ ATTACK</button>
+</div>
+
+<div class="ko-banner" id="koBanner">K.O.</div>
+<div class="exec-flash" id="execFlash"></div>
+
+<div class="overlay diff-overlay" id="diffScreen">
+  <div class="modal diff-modal">
+    <h2>⚔️ CHOOSE YOUR FOE ⚔️</h2>
+    <p class="diff-sub">Pick a difficulty to summon your opponent</p>
+    <div class="diff-options">
+      <button class="diff-card easy" onclick="selectDifficulty('easy')">
+        <div>
+          <div class="diff-name">EASY</div>
+          <div class="diff-desc">Mirror Dragon — a rival dragon just like your own · 100 HP</div>
+        </div>
+        <div class="diff-icon">🔵</div>
+      </button>
+      <button class="diff-card medium" onclick="selectDifficulty('medium')">
+        <div>
+          <div class="diff-name">MEDIUM</div>
+          <div class="diff-desc">Wyvern — leaner, quicker, and tougher · 175 HP</div>
+        </div>
+        <div class="diff-icon">🟠</div>
+      </button>
+      <button class="diff-card hard" onclick="selectDifficulty('hard')">
+        <div>
+          <div class="diff-name">HARD</div>
+          <div class="diff-desc">Elder Dragon — massive, with two great curled horns · 250 HP</div>
+        </div>
+        <div class="diff-icon">🔴</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" style="display:none">
+  <div class="modal">
+    <h2>⚡ Answer to Strike! ⚡</h2>
+    <div class="timer-track"><div class="timer-fill" id="tfill"></div></div>
+    <p class="q-text" id="qtext"></p>
+    <div id="code-area"></div>
+    <div class="opts" id="opts"></div>
+  </div>
+</div>
+
+<div class="endscreen" id="endscreen" style="display:none">
+  <div class="end-box"> 
+    <div class="end-title" id="end-title"></div>
+    <div class="end-msg" id="end-msg"></div>
+    <button class="restart" onclick="window.location.href='Selection-screen.html'">🔄 Back to Selection Screen</button>
+  </div>
+</div>
+
+<script>
+const QS=[
+  {q:"What does HTML stand for?",opts:["HyperText Markup Language","HighText Machine Language","Hyper Tool Markup Language","Home Text Making Language"],a:0},
+  {q:"What is HTML mainly used for?",opts:["Creating and structuring webpages","Making phone calls","Editing photos","Playing music"],a:0},
+  {q:"Is HTML a programming language?",opts:["Yes","No","Sometimes","Only on computers"],a:1},
+  {q:"What type of language is HTML?",opts:["Programming language","Markup language","Machine language","Spoken language"],a:1},
+  {q:"What do HTML tags use?",opts:["( )","[ ]","< >","{ }"],a:2},
+  {q:"Which tag is the main container of an HTML document?",opts:["<body>","<html>","<p>","<title>"],a:1},
+  {q:"Which tag contains the visible content of a webpage?",opts:["<head>","<title>","<body>","<html>"],a:2},
+  {q:"Which tag is used to create a main heading?",opts:["<p>","<h1>","<title>","<head>"],a:1},
+  {q:"Which tag is used to create a paragraph?",opts:["<p>","<h1>","<body>","<html>"],a:0},
+  {q:"What does <!DOCTYPE html> tell the browser?",opts:["The document uses HTML5","The page has a picture","The page has a paragraph","The page has a title"],a:0},
+  {q:"Which tag contains information about the webpage?",opts:["<body>","<p>","<head>","<h1>"],a:2},
+  {q:"Which tag sets the title shown on the browser tab?",opts:["<h1>","<title>","<p>","<body>"],a:1},
+  {q:"Which is a correct HTML paragraph?",opts:["(p)Hello(p)","[p]Hello[/p]","<p>Hello</p>","{p}Hello{/p}"],a:2},
+  {q:"Which is a correct HTML heading?",opts:["<h1>Hello</h1>","<heading>Hello</heading>","[h1]Hello[/h1]","(h1)Hello(/h1)"],a:0},
+  {q:"What is <p> used for?",opts:["Creating a title","Creating a paragraph","Creating the webpage","Creating the browser"],a:1},
+  {q:"What is <h1> used for?",opts:["Creating a main heading","Creating a paragraph","Creating a browser tab","Creating the HTML document"],a:0},
+  {q:"Where is the webpage's visible content usually placed?",opts:["<head>","<title>","<body>","<!DOCTYPE html>"],a:2},
+  {q:"Which one is part of the basic HTML structure?",opts:["<html>","<music>","<computer>","<screen>"],a:0},
+  {q:"Which tag is used in this code: <p>Welcome!</p>?",opts:["Heading tag","Paragraph tag","Title tag","Head tag"],a:1},
+  {q:"What is the purpose of HTML tags?",opts:["To organize and structure webpage content","To charge a computer","To connect to Wi-Fi","To create computer hardware"],a:0}
+];
+MEDIUM_QS=[
+  {q:"What is the difference between HTML and CSS?",opts:["HTML structures content, CSS styles it","HTML is for programming, CSS is for markup","HTML is a language, CSS is a framework","HTML is for images, CSS is for text"],a:0},
+  {q:"Which HTML tag is used to link an external CSS file?",opts:["<link>","<style>","<css>","<script>"],a:0},
+  {q:"What does the <div> tag do in HTML?",opts:["Defines a division or section","Creates a button","Adds an image","Defines a list"],a:0},
+  {q:"What is the purpose of the <span> tag in HTML?",opts:["To group inline elements","To create a new paragraph","To add a heading","To insert an image"],a:0},
+  {q:"Which attribute is used to specify the URL of a link in HTML?",opts:["href","src","alt","link"],a:0},
+  {q:"What is the difference between <ul> and <ol> tags in HTML?",opts:["<ul> creates an unordered list, <ol> creates an ordered list","<ul> is for images, <ol> is for text","<ul> is for headings, <ol> is for paragraphs","<ul> is for links, <ol> is for buttons"],a:0},
+  {q:"What is the purpose of the <form> tag in HTML?",opts:["To create a form for user input","To display an image","To create a heading","To add a paragraph"],a:0},
+  {q:"Which attribute is used to specify the alternative text for an image in HTML?",opts:["alt","src","title","href"],a:0},
+  {q:"What is the difference between <section> and <article> tags in HTML?",opts:["<section> defines a section of content, <article> defines a self-contained article","<section> is for images, <article> is for text","<section> is for headings, <article> is for paragraphs","<section> is for links, <article> is for buttons"],a:0},
+  {q:"What is the purpose of the <header> tag in HTML?",opts:["To define the header of a document or section","To create a button","To add an image","To define a list"],a:0}
+];
+HARD_QS=[
+  {q:"What is the difference between HTML and XHTML?",opts:["XHTML is stricter and follows XML rules, while HTML is more lenient","HTML is for programming, XHTML is for markup","HTML is a language, XHTML is a framework","HTML is for images, XHTML is for text"],a:0},
+  {q:"Which HTML tag is used to embed a video in a webpage?",opts:["<video>","<embed>","<media>","<movie>"],a:0},
+  {q:"What is the purpose of the <canvas> tag in HTML?",opts:["To draw graphics and animations using JavaScript","To create a button","To add an image","To define a list"],a:0},
+  {q:"Which attribute is used to specify the dimensions of a canvas in HTML?",opts:["width and height","size and scale","length and breadth","dimension"],a:0},
+  {q:"What is the difference between <iframe> and < object> tags in HTML?",opts:["<iframe> is used to embed another webpage, while <object> is used to embed multimedia content","<iframe> is for images, <object> is for text","<iframe> is for headings, <object> is for paragraphs","<iframe> is for links, <object> is for buttons"],a:0},
+  {q:"What is the purpose of the <meta> tag in HTML?",opts:["To provide metadata about the webpage, such as character encoding and viewport settings","To create a button","To add an image","To define a list"],a:0},
+  {q:"Which attribute is used to specify the character encoding of a webpage in HTML?",opts:["charset","encoding","type","format"],a:0},
+  {q:"What is the difference between <b> and <strong> tags in HTML?",opts:["<b> is for bold text, while <strong> indicates strong importance","<b> is for images, <strong> is for text","<b> is for headings, <strong> is for paragraphs","<b> is for links, <strong> is for buttons"],a:0},
+  {q:"What is the purpose of the <link> tag in HTML?",opts:["To link external resources, such as stylesheets and icons","To create a button","To add an image","To define a list"],a:0},
+  {q:"Which attribute is used to specify the relationship between the current document and the linked resource in HTML?",opts:["rel","href","type","media"],a:0}
+]
+
+let php=100,ehp=100,timer=null,answered=false,curQ=null;
+let remainingTime=100; // ticks down from 100 to 0 while a question is open
+const PMAX=100;
+let EMAX=100;
+let difficulty=null;
+
+/* ---- Enemy dragon variants, injected into #edw-svg-holder based on difficulty ---- */
+const ENEMY_TEMPLATES={
+  /* EASY: an exact mirror of the player's own dragon, facing left */
+  easy:`<div style="width:100%;height:100%;transform:scaleX(-1)">
+    <svg class="dragon" viewBox="-20 -20 190 190" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="mb" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#42a5f5"/><stop offset="100%" stop-color="#0d47a1"/></radialGradient>
+        <radialGradient id="mh" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#64b5f6"/><stop offset="100%" stop-color="#1565c0"/></radialGradient>
+        <radialGradient id="mw" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#1a237e" stop-opacity=".9"/><stop offset="100%" stop-color="#0d1a6e"/></radialGradient>
+        <radialGradient id="msc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#90caf9"/><stop offset="100%" stop-color="#42a5f5"/></radialGradient>
+      </defs>
+      <path d="M45,90 Q22,98 12,112 Q3,124 -6,138 Q-2,148 6,144 Q10,136 16,126 Q24,112 32,102 Q38,96 45,95 Z" fill="#1565c0" stroke="#0d47a1" stroke-width="1"/>
+      <path d="M-6,138 L-16,146 L-4,150 Z" fill="#64b5f6"/>
+      <polygon points="30,100 28,92 25,101" fill="#64b5f6" opacity=".8"/>
+      <polygon points="18,112 16,104 13,113" fill="#64b5f6" opacity=".7"/>
+      <polygon points="6,126 4,118 1,127" fill="#64b5f6" opacity=".6"/>
+      <ellipse cx="68" cy="85" rx="36" ry="26" fill="url(#mb)" stroke="#0d47a1" stroke-width="1"/>
+      <ellipse cx="68" cy="90" rx="22" ry="16" fill="#bbdefb" opacity=".3"/>
+      <circle cx="54" cy="75" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+      <circle cx="66" cy="70" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+      <circle cx="78" cy="75" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+      <circle cx="60" cy="83" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+      <circle cx="72" cy="82" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+      <circle cx="84" cy="79" r="5" fill="none" stroke="#0d47a1" stroke-width=".8" opacity=".6"/>
+      <path d="M88,72 Q92,58 96,50 Q92,48 84,52 Q82,62 80,72 Z" fill="url(#mh)" stroke="#1565c0" stroke-width=".8"/>
+      <path d="M75,72 Q95,42 112,22 L120,14 Q114,28 108,38 L128,26 Q118,42 108,52 Q96,68 80,72 Z" fill="url(#mw)" stroke="#0d47a1" stroke-width=".8"/>
+      <path d="M120,14 L124,9 M120,14 L129,17 M128,26 L134,24 M108,52 L113,49" stroke="#283593" stroke-width=".7" fill="none"/>
+      <path d="M62,68 Q38,36 18,16 L10,6 Q16,22 22,32 L2,18 Q12,36 24,48 Q42,64 60,70 Z" fill="url(#mw)" stroke="#0d47a1" stroke-width=".8"/>
+      <path d="M10,6 L14,1 M10,6 L18,10 M2,18 L-3,15 M22,32 L26,28" stroke="#283593" stroke-width=".7" fill="none"/>
+      <ellipse cx="98" cy="42" rx="18" ry="14" fill="url(#mh)" stroke="#1565c0" stroke-width="1"/>
+      <circle cx="104" cy="36" r="3.5" fill="none" stroke="#1976d2" stroke-width=".7" opacity=".7"/>
+      <circle cx="94" cy="34" r="3" fill="none" stroke="#1976d2" stroke-width=".7" opacity=".7"/>
+      <ellipse cx="113" cy="47" rx="11" ry="7" fill="#1976d2" stroke="#1565c0" stroke-width=".8"/>
+      <ellipse cx="113" cy="47" rx="7" ry="4" fill="#42a5f5" opacity=".4"/>
+      <ellipse cx="118" cy="46" rx="1.8" ry="1.2" fill="#0d47a1"/>
+      <ellipse cx="113" cy="47.5" rx="1.5" ry="1" fill="#0d47a1"/>
+      <ellipse cx="102" cy="37" rx="5.5" ry="4.5" fill="#fff" stroke="#1565c0" stroke-width=".8"/>
+      <ellipse cx="102.5" cy="37" rx="3" ry="3.5" fill="#1a237e"/>
+      <ellipse cx="103.5" cy="35.5" rx="1.2" ry="1.5" fill="#4fc3f7"/>
+      <circle cx="104" cy="35" r=".8" fill="#fff"/>
+      <path d="M97.5,34 Q102,31 107.5,34" stroke="#1565c0" stroke-width="1" fill="none"/>
+      <path d="M100,28 Q103,18 99,10 Q96,18 97,28" fill="url(#msc)" stroke="#90caf9" stroke-width=".5"/>
+      <path d="M92,26 Q93,19 89,14 Q87,20 88,27" fill="#64b5f6" stroke="#90caf9" stroke-width=".5"/>
+      <path d="M96,33 Q102,30 108,32" stroke="#0d47a1" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M123,50 Q118,55 108,52" stroke="#0d47a1" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <polygon points="120,51 118,55 116,51" fill="#e3f2fd" opacity=".9"/>
+      <polygon points="115,51.5 113,54.5 111,51.5" fill="#e3f2fd" opacity=".9"/>
+      <polygon points="88,64 85,46 81,64" fill="#64b5f6" opacity=".85"/>
+      <polygon points="78,66 75,50 71,66" fill="#64b5f6" opacity=".8"/>
+      <polygon points="68,68 65,53 61,68" fill="#64b5f6" opacity=".75"/>
+      <polygon points="58,70 56,57 52,70" fill="#64b5f6" opacity=".7"/>
+      <polygon points="49,72 47,60 44,72" fill="#64b5f6" opacity=".65"/>
+      <polygon points="41,74 39,63 37,74" fill="#64b5f6" opacity=".6"/>
+      <path d="M82,105 Q86,115 90,120 Q84,122 78,118 Q78,112 78,105 Z" fill="#1976d2" stroke="#1565c0" stroke-width=".8"/>
+      <path d="M90,120 L93,125 M87,121 L89,126 M83,121 L84,126" stroke="#90caf9" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M58,108 Q60,118 62,123 Q56,124 52,120 Q54,114 55,108 Z" fill="#1976d2" stroke="#1565c0" stroke-width=".8"/>
+      <path d="M62,123 L64,128 M59,124 L60,129 M55,123 L55,128" stroke="#90caf9" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+  </div>`,
+
+  /* MEDIUM: a leaner, lower-HP wyvern — same red bloodline but narrower and quicker-looking */
+  medium:`<svg class="dragon" viewBox="-20 -20 190 190" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="eb" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#ef5350"/><stop offset="100%" stop-color="#7f0000"/></radialGradient>
+      <radialGradient id="eh" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#e57373"/><stop offset="100%" stop-color="#b71c1c"/></radialGradient>
+      <radialGradient id="ew" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#3e0000" stop-opacity=".9"/><stop offset="100%" stop-color="#1a0000"/></radialGradient>
+      <radialGradient id="esc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffcdd2"/><stop offset="100%" stop-color="#ef9a9a"/></radialGradient>
+    </defs>
+    <path d="M90,92 Q116,100 128,116 Q139,130 150,146 Q145,156 136,151 Q132,142 125,131 Q116,116 106,105 Q99,98 90,97 Z" fill="#b71c1c" stroke="#7f0000" stroke-width="1"/>
+    <path d="M150,146 L161,154 L148,158 Z" fill="#e57373"/>
+    <polygon points="108,102 110,93 113,103" fill="#e57373" opacity=".8"/>
+    <polygon points="121,116 123,107 126,117" fill="#e57373" opacity=".7"/>
+    <polygon points="134,131 136,122 139,132" fill="#e57373" opacity=".6"/>
+    <ellipse cx="70" cy="86" rx="30" ry="22" fill="url(#eb)" stroke="#7f0000" stroke-width="1"/>
+    <ellipse cx="70" cy="90" rx="18" ry="13" fill="#ffcdd2" opacity=".25"/>
+    <circle cx="58" cy="78" r="4.2" fill="none" stroke="#7f0000" stroke-width=".7" opacity=".6"/>
+    <circle cx="68" cy="74" r="4.2" fill="none" stroke="#7f0000" stroke-width=".7" opacity=".6"/>
+    <circle cx="78" cy="78" r="4.2" fill="none" stroke="#7f0000" stroke-width=".7" opacity=".6"/>
+    <circle cx="64" cy="85" r="4.2" fill="none" stroke="#7f0000" stroke-width=".7" opacity=".6"/>
+    <path d="M52,74 Q47,60 42,52 Q47,49 55,53 Q58,63 60,74 Z" fill="url(#eh)" stroke="#b71c1c" stroke-width=".8"/>
+    <path d="M63,74 Q40,42 20,20 L11,11 Q18,26 24,36 L4,24 Q14,40 26,52 Q42,68 60,73 Z" fill="url(#ew)" stroke="#7f0000" stroke-width=".8"/>
+    <path d="M11,11 L7,5 M11,11 L1,15 M4,24 L-2,21 M24,36 L19,32" stroke="#4e0000" stroke-width=".7" fill="none"/>
+    <path d="M78,70 Q104,38 126,17 L135,7 Q128,23 121,33 L142,19 Q131,38 118,50 Q99,66 80,72 Z" fill="url(#ew)" stroke="#7f0000" stroke-width=".8"/>
+    <path d="M135,7 L131,1 M135,7 L126,11 M142,19 L148,16 M121,33 L116,29" stroke="#4e0000" stroke-width=".7" fill="none"/>
+    <ellipse cx="40" cy="43" rx="16" ry="12" fill="url(#eh)" stroke="#b71c1c" stroke-width="1"/>
+    <circle cx="35" cy="38" r="3" fill="none" stroke="#c62828" stroke-width=".6" opacity=".7"/>
+    <ellipse cx="24" cy="47" rx="10" ry="6" fill="#c62828" stroke="#b71c1c" stroke-width=".8"/>
+    <ellipse cx="19" cy="46" rx="1.6" ry="1.1" fill="#7f0000"/>
+    <ellipse cx="37" cy="38" rx="5" ry="4" fill="#fff" stroke="#b71c1c" stroke-width=".8"/>
+    <ellipse cx="36.5" cy="38" rx="2.6" ry="3" fill="#4e0000"/>
+    <ellipse cx="35.5" cy="36.5" rx="1.1" ry="1.3" fill="#ff6f00"/>
+    <circle cx="35" cy="36" r=".7" fill="#fff"/>
+    <path d="M32,35 Q37,32 42,35" stroke="#b71c1c" stroke-width="1" fill="none"/>
+    <path d="M39,30 Q36,21 40,14 Q42,21 41,30" fill="url(#esc)" stroke="#ffcdd2" stroke-width=".5"/>
+    <path d="M46,28 Q45,22 48,17 Q50,23 49,29" fill="#e57373" stroke="#ffcdd2" stroke-width=".5"/>
+    <path d="M15,50 Q19,54 28,52" stroke="#7f0000" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+    <polygon points="18,51 20,54 22,51" fill="#ffcdd2" opacity=".9"/>
+    <polygon points="24,51.5 26,54 28,51.5" fill="#ffcdd2" opacity=".9"/>
+    <polygon points="52,64 55,49 58,64" fill="#e57373" opacity=".85"/>
+    <polygon points="60,66 63,52 66,66" fill="#e57373" opacity=".8"/>
+    <polygon points="68,68 71,55 74,68" fill="#e57373" opacity=".75"/>
+    <polygon points="76,70 78,58 81,70" fill="#e57373" opacity=".7"/>
+    <polygon points="84,72 86,61 88,72" fill="#e57373" opacity=".65"/>
+    <path d="M56,102 Q52,111 48,116 Q54,118 59,114 Q59,108 59,102 Z" fill="#c62828" stroke="#b71c1c" stroke-width=".8"/>
+    <path d="M48,116 L45,121 M51,117 L49,122 M55,117 L54,122" stroke="#ffcdd2" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M80,105 Q78,114 76,119 Q82,120 86,116 Q84,110 83,105 Z" fill="#c62828" stroke="#b71c1c" stroke-width=".8"/>
+    <path d="M76,119 L74,124 M79,120 L78,125 M83,119 L83,124" stroke="#ffcdd2" stroke-width="1.1" stroke-linecap="round"/>
+  </svg>`,
+
+  /* HARD: a hulking elder dragon with two big rounded curled horns, rendered bigger via .big class */
+  hard:`<svg class="dragon" viewBox="-20 -20 190 190" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="eb" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="#ef5350"/><stop offset="100%" stop-color="#5c0000"/></radialGradient>
+      <radialGradient id="eh" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#e57373"/><stop offset="100%" stop-color="#8f0000"/></radialGradient>
+      <radialGradient id="ew" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#2a0000" stop-opacity=".95"/><stop offset="100%" stop-color="#100000"/></radialGradient>
+      <radialGradient id="esc" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffd8a8"/><stop offset="100%" stop-color="#e8a45c"/></radialGradient>
+    </defs>
+    <path d="M95,90 Q118,98 128,112 Q137,124 146,138 Q142,148 134,144 Q130,136 124,126 Q116,112 108,102 Q102,96 95,95 Z" fill="#8f0000" stroke="#5c0000" stroke-width="1.2"/>
+    <path d="M146,138 L157,146 L144,150 Z" fill="#e57373"/>
+    <polygon points="110,100 112,92 115,101" fill="#e57373" opacity=".8"/>
+    <polygon points="122,112 124,104 127,113" fill="#e57373" opacity=".7"/>
+    <polygon points="134,126 136,118 139,127" fill="#e57373" opacity=".6"/>
+    <ellipse cx="72" cy="85" rx="38" ry="28" fill="url(#eb)" stroke="#5c0000" stroke-width="1.3"/>
+    <ellipse cx="72" cy="90" rx="24" ry="17" fill="#ffcdd2" opacity=".22"/>
+    <circle cx="57" cy="74" r="5.2" fill="none" stroke="#5c0000" stroke-width=".9" opacity=".6"/>
+    <circle cx="70" cy="69" r="5.2" fill="none" stroke="#5c0000" stroke-width=".9" opacity=".6"/>
+    <circle cx="83" cy="74" r="5.2" fill="none" stroke="#5c0000" stroke-width=".9" opacity=".6"/>
+    <circle cx="63" cy="83" r="5.2" fill="none" stroke="#5c0000" stroke-width=".9" opacity=".6"/>
+    <circle cx="76" cy="82" r="5.2" fill="none" stroke="#5c0000" stroke-width=".9" opacity=".6"/>
+    <circle cx="89" cy="78" r="5.2" fill="none" stroke="#5c0000" stroke-width=".9" opacity=".6"/>
+    <path d="M52,72 Q48,58 44,50 Q48,48 56,52 Q58,62 60,72 Z" fill="url(#eh)" stroke="#8f0000" stroke-width=".9"/>
+    <path d="M65,72 Q45,42 28,22 L20,14 Q26,28 32,38 L12,26 Q22,42 32,52 Q44,68 60,72 Z" fill="url(#ew)" stroke="#5c0000" stroke-width=".9"/>
+    <path d="M20,14 L16,9 M20,14 L11,17 M12,26 L6,24 M32,52 L27,49" stroke="#300000" stroke-width=".8" fill="none"/>
+    <path d="M78,68 Q102,36 122,16 L130,6 Q124,22 118,32 L138,18 Q128,36 116,48 Q98,64 80,70 Z" fill="url(#ew)" stroke="#5c0000" stroke-width=".9"/>
+    <path d="M130,6 L126,1 M130,6 L122,10 M138,18 L143,15 M118,32 L114,28" stroke="#300000" stroke-width=".8" fill="none"/>
+    <ellipse cx="42" cy="42" rx="19" ry="15" fill="url(#eh)" stroke="#8f0000" stroke-width="1.1"/>
+    <circle cx="36" cy="36" r="3.6" fill="none" stroke="#a83232" stroke-width=".7" opacity=".7"/>
+    <ellipse cx="26" cy="47" rx="12" ry="7.5" fill="#a83232" stroke="#8f0000" stroke-width=".9"/>
+    <ellipse cx="21" cy="46" rx="1.9" ry="1.3" fill="#5c0000"/>
+    <ellipse cx="26" cy="47.5" rx="1.6" ry="1.1" fill="#5c0000"/>
+    <ellipse cx="38" cy="37" rx="5.8" ry="4.7" fill="#fff" stroke="#8f0000" stroke-width=".9"/>
+    <ellipse cx="37.5" cy="37" rx="3.2" ry="3.7" fill="#300000"/>
+    <ellipse cx="36.5" cy="35.5" rx="1.3" ry="1.6" fill="#ff8f00"/>
+    <circle cx="36" cy="35" r=".9" fill="#fff"/>
+    <path d="M32,34 Q38,30.5 44,34" stroke="#8f0000" stroke-width="1.1" fill="none"/>
+    <!-- two big rounded curled horns -->
+    <path d="M40,29 C28,25 20,12 27,-1 C36,3 44,10 44,22 C50,12 52,0 45,-10 C58,-4 62,14 48,28 C45,30 42,30 40,29 Z" fill="url(#esc)" stroke="#c97f2e" stroke-width="1"/>
+    <path d="M50,26 C63,22 72,9 65,-4 C58,1 52,9 51,21 C58,13 62,4 57,-6 C68,-1 70,16 55,27 C53,28 51,27 50,26 Z" fill="#e8a45c" stroke="#c97f2e" stroke-width="1"/>
+    <path d="M17,50 Q22,55 32,52" stroke="#5c0000" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    <polygon points="20,51 22,56 24,51" fill="#ffe0b2" opacity=".9"/>
+    <polygon points="25,51.5 27,55.5 29,51.5" fill="#ffe0b2" opacity=".9"/>
+    <polygon points="52,64 55,44 59,64" fill="#e57373" opacity=".9"/>
+    <polygon points="62,66 65,48 69,66" fill="#e57373" opacity=".85"/>
+    <polygon points="72,68 75,51 79,68" fill="#e57373" opacity=".8"/>
+    <polygon points="82,70 84,55 88,70" fill="#e57373" opacity=".75"/>
+    <polygon points="91,72 93,58 96,72" fill="#e57373" opacity=".7"/>
+    <polygon points="99,74 101,61 103,74" fill="#e57373" opacity=".65"/>
+    <path d="M58,105 Q54,115 50,120 Q56,122 62,118 Q62,112 62,105 Z" fill="#a83232" stroke="#5c0000" stroke-width=".9"/>
+    <path d="M50,120 L47,125 M53,121 L51,126 M57,121 L56,126" stroke="#ffcdd2" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M82,108 Q80,118 78,123 Q84,124 88,120 Q86,114 85,108 Z" fill="#a83232" stroke="#5c0000" stroke-width=".9"/>
+    <path d="M78,123 L76,128 M81,124 L80,129 M85,123 L85,128" stroke="#ffcdd2" stroke-width="1.3" stroke-linecap="round"/>
+  </svg>`
+};
+
+const DIFF_LABEL={easy:'🔵 MIRROR DRAGON',medium:'🟠 WYVERN',hard:'🔴 ELDER DRAGON'};
+const DIFF_HP={easy:100,medium:175,hard:250};
+
+function selectDifficulty(level){
+  difficulty=level;
+  EMAX=DIFF_HP[level];
+  php=PMAX;ehp=EMAX;
+  document.getElementById('edw-svg-holder').innerHTML=ENEMY_TEMPLATES[level];
+  document.getElementById('edw').classList.toggle('big',level==='hard');
+  document.getElementById('enemy-label').textContent=DIFF_LABEL[level];
+  upHP();
+  document.getElementById('diffScreen').style.display='none';
+  document.getElementById('atk').disabled=false;
+  const introMsgs={
+    easy:'⚔️ A mirror image of your own dragon rises to challenge you!',
+    medium:'⚔️ A swift wyvern shrieks and takes to the air — the battle begins!',
+    hard:'⚔️ An elder dragon, crowned with two great horns, looms before you!'
+  };
+  log(introMsgs[level],'log-info');
+}
+
+function log(msg,cls=''){document.getElementById('log').innerHTML=`<span class="${cls}">${msg}</span>`}
+function upHP(){
+  document.getElementById('php').style.width=Math.max(0,php/PMAX*100)+'%';
+  document.getElementById('ehp').style.width=Math.max(0,ehp/EMAX*100)+'%';
+  document.getElementById('php-txt').textContent=Math.max(0,php)+'/'+PMAX;
+  document.getElementById('ehp-txt').textContent=Math.max(0,ehp)+'/'+EMAX;
+  document.getElementById('php').style.background=php<=30?'linear-gradient(90deg,#b71c1c,#ef5350)':'linear-gradient(90deg,#1565c0,#4fc3f7)';
+}
+function shake(id){
+  const el=document.getElementById(id);
+  el.classList.remove('shaking');void el.offsetWidth;
+  el.classList.add('shaking');
+  setTimeout(()=>el.classList.remove('shaking'),560);
+}
+function fireAnim(id){
+  const el=document.getElementById(id);
+  el.classList.remove('shoot');void el.offsetWidth;
+  el.classList.add('shoot');
+  setTimeout(()=>el.classList.remove('shoot'),700);
+}
+
+/* ---- Juice: sparks, damage numbers, hp flash, screen shake ---- */
+function spawnSparks(el,color,count){
+  count=count||6;
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='impact-spark';
+    s.style.background=color;
+    s.style.boxShadow='0 0 7px 2px '+color;
+    el.appendChild(s);
+    const ang=Math.random()*Math.PI*2;
+    const dist=18+Math.random()*32;
+    const dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
+    s.animate([
+      {opacity:1, transform:'translate(-50%,-50%) translate(0px,0px) scale(1)'},
+      {opacity:0, transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(.25)`}
+    ],{duration:380+Math.random()*160,easing:'ease-out'});
+    setTimeout(()=>s.remove(),580);
+  }
+}
+function spawnDamageNumber(el,dmg){
+  if(!el)return;
+  const num=document.createElement('div');
+  num.className='dmg-num';
+  num.textContent='-'+dmg;
+  el.appendChild(num);
+  num.animate([
+    {opacity:0, transform:'translate(-50%,-40%) scale(.4) rotate(-6deg)'},
+    {opacity:1, transform:'translate(-50%,-75%) scale(1.25) rotate(3deg)', offset:.25},
+    {opacity:1, transform:'translate(-50%,-105%) scale(1) rotate(0deg)', offset:.65},
+    {opacity:0, transform:'translate(-50%,-150%) scale(.9) rotate(0deg)'}
+  ],{duration:900,easing:'ease-out'});
+  setTimeout(()=>num.remove(),920);
+}
+function flashHP(trackId){
+  const el=document.getElementById(trackId);
+  if(!el)return;
+  el.classList.remove('flash');void el.offsetWidth;
+  el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),420);
+}
+function shakeBattlefield(mag){
+  mag=mag||4;
+  document.querySelector('.battlefield').animate([
+    {transform:'translate(0px,0px)'},
+    {transform:`translate(${-mag}px,${mag*0.4}px)`},
+    {transform:`translate(${mag}px,${-mag*0.3}px)`},
+    {transform:`translate(${-mag*0.5}px,${mag*0.2}px)`},
+    {transform:'translate(0px,0px)'}
+  ],{duration:240,easing:'ease-out'});
+}
+function impactPunch(defenderId,trackId,dmg,delay){
+  setTimeout(()=>{
+    spawnDamageNumber(document.getElementById(defenderId),dmg);
+    flashHP(trackId);
+    shakeBattlefield(4);
+  }, delay);
+}
+
+/* ---- Attack style picker: fast answers => bite/slash (melee), slower => lightning, timeout-ish => fireball ---- */
+function pickType(rt){
+  if(rt>75) return 'bite';
+  if(rt>50) return 'slash';
+  if(rt>25) return 'lightning';
+  return 'fireball';
+}
+
+/* ---- Melee slash: attacker lunges across to the defender and slashes, then returns ---- */
+function slashHit(attackerEl,defenderEl,opts){
+  opts=opts||{};
+  const travelFactor=opts.travelScale!=null?opts.travelScale:(0.7+Math.random()*0.12);
+  const dur=opts.duration||(560+Math.random()*100);
+  const rotBoost=opts.rotBoost||1;
+
+  const aRect=attackerEl.getBoundingClientRect();
+  const dRect=defenderEl.getBoundingClientRect();
+  const dx=(dRect.left+dRect.width/2)-(aRect.left+aRect.width/2);
+  const dy=(dRect.top+dRect.height/2)-(aRect.top+aRect.height/2);
+  const dir=dx>0?1:-1;
+  const travelX=dx*travelFactor;
+  const travelY=dy*0.15+(Math.random()*10-5);
+  const rot=(8+Math.random()*6)*rotBoost;
+
+  attackerEl.animate([
+    {transform:'translate(0px,0px) rotate(0deg)'},
+    {transform:`translate(${travelX*0.55}px, ${travelY-16}px) rotate(${-dir*rot}deg)`, offset:0.32},
+    {transform:`translate(${travelX}px, ${travelY-6}px) rotate(${dir*rot*0.8}deg)`, offset:0.5},
+    {transform:`translate(${travelX*0.65}px, ${travelY-10}px) rotate(${-dir*rot*0.4}deg)`, offset:0.72},
+    {transform:'translate(0px,0px) rotate(0deg)'}
+  ],{duration:dur,easing:'ease-in-out'});
+
+  setTimeout(()=>{
+    spawnSlashMark(defenderEl);
+    spawnSparks(defenderEl,'#fff59d');
+    shake(defenderEl.id);
+  }, dur*0.5);
+}
+function doSlashAttack(attackerEl,defenderEl){
+  slashHit(attackerEl,defenderEl,{});
+}
+function spawnSlashMark(defenderEl){
+  const mark=document.createElement('div');
+  mark.className='slash-mark-base';
+  defenderEl.appendChild(mark);
+  const rot=-25-Math.random()*20;
+  mark.animate([
+    {opacity:0, transform:`translate(-50%,-50%) rotate(${rot}deg) scaleX(0)`},
+    {opacity:1, transform:`translate(-50%,-50%) rotate(${rot}deg) scaleX(1)`, offset:0.3},
+    {opacity:1, transform:`translate(-50%,-50%) rotate(${rot}deg) scaleX(1)`, offset:0.65},
+    {opacity:0, transform:`translate(-50%,-50%) rotate(${rot}deg) scaleX(1.15)`}
+  ],{duration:420,easing:'ease-out'});
+  setTimeout(()=>mark.remove(),440);
+}
+
+/* ---- Bite: attacker lunges in close and chomps, leaving a teeth-mark impact ---- */
+function doBiteAttack(attackerEl,defenderEl){
+  const dur=460+Math.random()*90;
+  const aRect=attackerEl.getBoundingClientRect();
+  const dRect=defenderEl.getBoundingClientRect();
+  const dx=(dRect.left+dRect.width/2)-(aRect.left+aRect.width/2);
+  const dy=(dRect.top+dRect.height/2)-(aRect.top+aRect.height/2);
+  const travelX=dx*0.62;
+  const travelY=dy*0.12+(Math.random()*6-3);
+
+  attackerEl.animate([
+    {transform:'translate(0px,0px) scale(1)'},
+    {transform:`translate(${travelX*0.7}px, ${travelY}px) scale(1.05)`, offset:0.38},
+    {transform:`translate(${travelX}px, ${travelY}px) scale(1.14)`, offset:0.55},
+    {transform:`translate(${travelX*0.55}px, ${travelY}px) scale(1.03)`, offset:0.76},
+    {transform:'translate(0px,0px) scale(1)'}
+  ],{duration:dur,easing:'ease-in-out'});
+
+  setTimeout(()=>{
+    spawnBiteMark(defenderEl);
+    spawnSparks(defenderEl,'#ff8a80');
+    shake(defenderEl.id);
+  }, dur*0.55);
+}
+function spawnBiteMark(defenderEl){
+  const mark=document.createElement('div');
+  mark.className='bite-mark';
+  mark.innerHTML=`<svg width="46" height="30" viewBox="0 0 46 30" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2,4 L8,14 L14,4 L20,14 L26,4 L32,14 L38,4 L44,4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M2,26 L8,16 L14,26 L20,16 L26,26 L32,16 L38,26 L44,26" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+  </svg>`;
+  defenderEl.appendChild(mark);
+  mark.animate([
+    {opacity:0, transform:'translate(-50%,-50%) scale(.5)'},
+    {opacity:1, transform:'translate(-50%,-50%) scale(1.12)', offset:0.3},
+    {opacity:1, transform:'translate(-50%,-50%) scale(1)', offset:0.6},
+    {opacity:0, transform:'translate(-50%,-50%) scale(1.05)'}
+  ],{duration:420,easing:'ease-out'});
+  setTimeout(()=>mark.remove(),440);
+}
+
+/* ---- Lightning: a jagged bolt strikes down onto the defender from above ---- */
+function doLightningAttack(attackerEl,defenderEl){
+  const arena=document.querySelector('.arena');
+  const dRect=defenderEl.getBoundingClientRect();
+  const arenaRect=arena.getBoundingClientRect();
+  const targetX=dRect.left+dRect.width/2-arenaRect.left;
+  const targetY=dRect.top+dRect.height*0.35-arenaRect.top;
+  const topY=-24;
+  const boltH=Math.max(targetY-topY,50);
+
+  const bolt=document.createElement('div');
+  bolt.className='lightning-bolt';
+  bolt.style.left=(targetX-24)+'px';
+  bolt.style.top=topY+'px';
+  bolt.style.width='48px';
+  bolt.style.height=boltH+'px';
+  bolt.innerHTML=`<svg viewBox="0 0 100 300" preserveAspectRatio="none" width="48" height="${boltH}" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50,0 L28,120 L54,120 L18,300 L72,140 L44,140 L82,0 Z" fill="#fff9c4" stroke="#ffd54f" stroke-width="5"/>
+  </svg>`;
+  arena.appendChild(bolt);
+
+  const anim=bolt.animate([
+    {opacity:0, transform:'scaleY(.4)'},
+    {opacity:1, transform:'scaleY(1)', offset:0.12},
+    {opacity:.5, transform:'scaleY(1)', offset:0.22},
+    {opacity:1, transform:'scaleY(1)', offset:0.34},
+    {opacity:1, transform:'scaleY(1)', offset:0.55},
+    {opacity:0, transform:'scaleY(1)'}
+  ],{duration:400,easing:'ease-out'});
+
+  setTimeout(()=>{
+    spawnStrikeFlash(defenderEl);
+    spawnSparks(defenderEl,'#fff9c4',8);
+    shake(defenderEl.id);
+  }, 150);
+
+  anim.onfinish=()=>bolt.remove();
+}
+function spawnStrikeFlash(defenderEl){
+  const flash=document.createElement('div');
+  flash.className='strike-flash';
+  defenderEl.appendChild(flash);
+  flash.animate([
+    {opacity:0, transform:'translate(-50%,-50%) scale(.3)'},
+    {opacity:1, transform:'translate(-50%,-50%) scale(1.3)', offset:0.25},
+    {opacity:0, transform:'translate(-50%,-50%) scale(1.7)'}
+  ],{duration:380,easing:'ease-out'});
+  setTimeout(()=>flash.remove(),400);
+}
+
+/* ---- Fireball: a projectile travels from attacker's mouth to the defender, leaving a trail ---- */
+function doFireballAttack(attackerEl,defenderEl,muzzleFireId){
+  fireAnim(muzzleFireId);
+  const arena=document.querySelector('.arena');
+  const aRect=attackerEl.getBoundingClientRect();
+  const dRect=defenderEl.getBoundingClientRect();
+  const arenaRect=arena.getBoundingClientRect();
+  const startX=aRect.left+aRect.width/2-arenaRect.left;
+  const startY=aRect.top+aRect.height*0.38-arenaRect.top;
+  const endX=dRect.left+dRect.width/2-arenaRect.left;
+  const endY=dRect.top+dRect.height*0.38-arenaRect.top;
+  const midX=(startX+endX)/2;
+  const midY=Math.min(startY,endY)-28-Math.random()*18;
+
+  const ball=document.createElement('div');
+  ball.className='fireball';
+  arena.appendChild(ball);
+  const dur=460+Math.random()*100;
+  const keyframes=[
+    {transform:`translate(${startX}px, ${startY}px) translate(-50%,-50%) rotate(0deg)`, offset:0},
+    {transform:`translate(${midX}px, ${midY}px) translate(-50%,-50%) rotate(220deg)`, offset:0.5},
+    {transform:`translate(${endX}px, ${endY}px) translate(-50%,-50%) rotate(420deg)`, offset:1}
+  ];
+
+  const anim=ball.animate(keyframes,{duration:dur,easing:'ease-in'});
+
+  // trailing glow dots
+  const trailTimer=setInterval(()=>{
+    const trail=document.createElement('div');
+    trail.className='fireball-trail';
+    trail.style.left=ball.style.left||'0px';
+    trail.style.top=ball.style.top||'0px';
+    const r=ball.getBoundingClientRect();
+    const ar=arena.getBoundingClientRect();
+    trail.style.transform=`translate(${r.left-ar.left+r.width/2}px, ${r.top-ar.top+r.height/2}px) translate(-50%,-50%)`;
+    arena.appendChild(trail);
+    trail.animate([{opacity:.7,transform:trail.style.transform+' scale(1)'},{opacity:0,transform:trail.style.transform+' scale(.3)'}],{duration:340,easing:'ease-out'});
+    setTimeout(()=>trail.remove(),350);
+  },45);
+
+  anim.onfinish=()=>{
+    clearInterval(trailTimer);
+    ball.remove();
+    spawnSparks(defenderEl,'#ff9800',8);
+    shake(defenderEl.id);
+  };
+}
+
+function performAttack(attackerId,defenderId,type,muzzleFireId){
+  const attackerEl=document.getElementById(attackerId);
+  const defenderEl=document.getElementById(defenderId);
+  if(type==='slash'){
+    doSlashAttack(attackerEl,defenderEl);
+  } else if(type==='bite'){
+    doBiteAttack(attackerEl,defenderEl);
+  } else if(type==='lightning'){
+    doLightningAttack(attackerEl,defenderEl);
+  } else {
+    doFireballAttack(attackerEl,defenderEl,muzzleFireId);
+  }
+}
+
+function openQ(){
+  answered=false;
+  curQ=QS[Math.floor(Math.random()*QS.length)];
+  document.getElementById('atk').disabled=true;
+  document.getElementById('qtext').textContent=curQ.q;
+  const ca=document.getElementById('code-area');
+  ca.innerHTML=curQ.code?`<div class="code-snippet">${curQ.code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`:'';
+  const og=document.getElementById('opts');og.innerHTML='';
+  curQ.opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=()=>checkA(i,b);og.appendChild(b);
+  });
+  document.getElementById('overlay').style.display='flex';
+  startTimer();
+}
+function startTimer(){
+  clearInterval(timer);remainingTime=100;
+  document.getElementById('tfill').style.width='100%';
+  timer=setInterval(()=>{
+    remainingTime--;
+    document.getElementById('tfill').style.width=remainingTime+'%';
+    if(remainingTime<=0){clearInterval(timer);if(!answered)timeUp();}
+  },120);
+}
+const IMPACT_DELAY={bite:260,slash:290,lightning:160,fireball:470};
+function checkA(i,btn){
+  if(answered)return;answered=true;clearInterval(timer);
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.opt')[curQ.a].classList.add('correct');
+  const type=pickType(remainingTime);
+  const goodMsgs={
+    bite:d=>`🦷 Lightning-fast bite! Your dragon chomps the enemy for <strong>${d} damage</strong>!`,
+    slash:d=>`⚡ Swift strike! Your dragon slashes the enemy for <strong>${d} damage</strong>!`,
+    lightning:d=>`⚡ Your dragon channels a bolt, striking the enemy for <strong>${d} damage</strong>!`,
+    fireball:d=>`🔥 Correct! Your dragon blasts the enemy for <strong>${d} damage</strong>!`
+  };
+  const badMsgs={
+    bite:d=>`🦷 The enemy lunges in and bites you for <strong>${d} damage</strong>!`,
+    slash:d=>`💢 The enemy lunges in and slashes you for <strong>${d} damage</strong>!`,
+    lightning:d=>`⚡ The enemy summons a bolt, striking you for <strong>${d} damage</strong>!`,
+    fireball:d=>`💥 Wrong! The enemy retaliates with fire for <strong>${d} damage</strong>!`
+  };
+  if(i===curQ.a){
+    btn.classList.add('correct');
+    const d=Math.floor(Math.random()*16)+15;ehp=Math.max(0,ehp-d);upHP();
+    performAttack('pdw','edw',type,'p-fire');
+    impactPunch('edw','ehp-track',d,IMPACT_DELAY[type]||300);
+    log(goodMsgs[type](d),'log-good');
+  } else {
+    btn.classList.add('wrong');
+    const d=Math.floor(Math.random()*11)+10;php=Math.max(0,php-d);upHP();
+    performAttack('edw','pdw',type,'e-fire');
+    impactPunch('pdw','php-track',d,IMPACT_DELAY[type]||300);
+    log(badMsgs[type](d),'log-bad');
+  }
+  setTimeout(()=>{closeQ();checkEnd();},1300);
+}
+function timeUp(){
+  answered=true;document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.opt')[curQ.a].classList.add('correct');
+  const d=Math.floor(Math.random()*11)+15;php=Math.max(0,php-d);upHP();
+  performAttack('edw','pdw','fireball','e-fire');
+  impactPunch('pdw','php-track',d,IMPACT_DELAY.fireball);
+  log(`⏱️ Time's up! The enemy unleashes a devastating fireball for <strong>${d} damage</strong>!`,'log-bad');
+  setTimeout(()=>{closeQ();checkEnd();},1300);
+}
+function closeQ(){document.getElementById('overlay').style.display='none';document.getElementById('atk').disabled=false;}
+
+/* ---- KO + execution finisher sequence ---- */
+function collapseDragon(el){
+  const dir=el.id==='pdw'?1:-1;
+  return el.animate([
+    {transform:'translate(0px,0px) rotate(0deg)',filter:'grayscale(0) brightness(1)'},
+    {transform:`translate(0px,8px) rotate(${dir*16}deg)`,filter:'grayscale(.4) brightness(.9)',offset:.45},
+    {transform:`translate(0px,28px) rotate(${dir*72}deg)`,filter:'grayscale(1) brightness(.5)',offset:1}
+  ],{duration:750,easing:'cubic-bezier(.4,.6,.6,1)',fill:'forwards'});
+}
+function doExecution(winnerEl,loserEl,onDone){
+  // Hit 1: fast slash
+  slashHit(winnerEl,loserEl,{travelScale:0.7,duration:280,rotBoost:1});
+  setTimeout(()=>{
+    // Hit 2: fierce bite
+    doBiteAttack(winnerEl,loserEl);
+    setTimeout(()=>{
+      // Hit 3: lightning bolt strike
+      doLightningAttack(winnerEl,loserEl);
+      setTimeout(()=>{
+        // Hit 4: counter-angle slash
+        slashHit(winnerEl,loserEl,{travelScale:0.88,duration:270,rotBoost:-1});
+        setTimeout(()=>{
+          // Hit 5: second bite, finishing bite before the nuke
+          doBiteAttack(winnerEl,loserEl);
+          setTimeout(()=>{
+            // Hit 6: the nuke — a huge fireball that ends the fight
+            nukeFireball(winnerEl,loserEl,onDone);
+          },320);
+        },300);
+      },400);
+    },380);
+  },320);
+}
+function nukeFireball(winnerEl,loserEl,onDone){
+  const arena=document.querySelector('.arena');
+  const wRect=winnerEl.getBoundingClientRect();
+  const lRect=loserEl.getBoundingClientRect();
+  const arenaRect=arena.getBoundingClientRect();
+  const startX=wRect.left+wRect.width/2-arenaRect.left;
+  const startY=wRect.top+wRect.height*0.38-arenaRect.left;
+  const endX=lRect.left+lRect.width/2-arenaRect.left;
+  const endY=lRect.top+lRect.height*0.38-arenaRect.top;
+  const midX=(startX+endX)/2;
+  const midY=Math.min(startY,endY)-50;
+
+  const ball=document.createElement('div');
+  ball.className='nuke-ball';
+  arena.appendChild(ball);
+  const dur=620;
+  const anim=ball.animate([
+    {transform:`translate(${startX}px, ${startY}px) translate(-50%,-50%) scale(.4) rotate(0deg)`, offset:0},
+    {transform:`translate(${midX}px, ${midY}px) translate(-50%,-50%) scale(.9) rotate(200deg)`, offset:.45},
+    {transform:`translate(${endX}px, ${endY}px) translate(-50%,-50%) scale(1.4) rotate(400deg)`, offset:1}
+  ],{duration:dur,easing:'cubic-bezier(.3,.6,.4,1)'});
+
+  anim.onfinish=()=>{
+    ball.remove();
+    spawnShockwave(loserEl);
+    spawnSparks(loserEl,'#ff6d00',14);
+    shake(loserEl.id);
+
+    const flash=document.getElementById('execFlash');
+    flash.classList.remove('show');void flash.offsetWidth;
+    flash.classList.add('show');
+
+    document.querySelector('.battlefield').animate([
+      {transform:'translate(0px,0px)'},
+      {transform:'translate(-7px,4px)'},
+      {transform:'translate(7px,-3px)'},
+      {transform:'translate(-4px,2px)'},
+      {transform:'translate(0px,0px)'}
+    ],{duration:420,easing:'ease-out'});
+
+    setTimeout(onDone,450);
+  };
+}
+function spawnShockwave(loserEl){
+  const wave=document.createElement('div');
+  wave.className='shockwave';
+  loserEl.appendChild(wave);
+  wave.animate([
+    {transform:'translate(-50%,-50%) scale(0)',opacity:1,borderWidth:'4px'},
+    {transform:'translate(-50%,-50%) scale(6.5)',opacity:0,borderWidth:'1px'}
+  ],{duration:520,easing:'ease-out'});
+  setTimeout(()=>wave.remove(),540);
+}
+function playKO(loserId,winnerId,callback){
+  document.getElementById('atk').disabled=true;
+  const loserEl=document.getElementById(loserId);
+  const winnerEl=document.getElementById(winnerId);
+
+  log('💫 A finishing blow is coming...','log-info');
+  collapseDragon(loserEl);
+
+  setTimeout(()=>{
+    const banner=document.getElementById('koBanner');
+    banner.classList.remove('show');void banner.offsetWidth;
+    banner.classList.add('show');
+  },250);
+
+  setTimeout(()=>{
+    log('⚔️ EXECUTION! Slash — bite — lightning — slash — bite — and a nuking fireball seals the battle!','log-bad');
+    doExecution(winnerEl,loserEl,callback);
+  },1150);
+}
+function checkEnd(){
+  if(ehp<=0){
+    playKO('edw','pdw',()=>showEnd('🏆 VICTORY!','Your dragon mastered Html and delivered the finishing blow!'));
+  } else if(php<=0){
+    playKO('pdw','edw',()=>showEnd('💀 DEFEAT...','Your dragon was struck down. Study your Html and try again!'));
+  }
+}
+function showEnd(t,m){
+  document.getElementById('atk').disabled=true;
+  document.getElementById('end-title').textContent=t;
+  document.getElementById('end-msg').textContent=m;
+  document.getElementById('endscreen').style.display='flex';
+}
+function restart(){
+  document.getElementById('endscreen').style.display='none';
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('atk').disabled=true;
+  document.getElementById('diffScreen').style.display='flex';
+  log('⚔️ Choose a difficulty to begin a new battle!','log-info');
+}
+upHP();
+
+</script>
+</body>
+</html>
