@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Review</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#11161d;
+    --line:#1f2733;
+    --text:#e6edf3;
+    --muted:#7d8a9c;
+    --tag:#ff8a3d;
+    --good:#3ddc97;
+    --bad:#ff5d5d;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Consolas','SFMono-Regular',Menlo,monospace;
+    display:flex;
+    justify-content:center;
+    padding:48px 20px 80px;
+  }
+  .wrap{width:100%; max-width:640px;}
+  .eyebrow{
+    color:var(--tag);
+    letter-spacing:.12em;
+    font-size:13px;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{
+    font-size:28px;
+    margin:0 0 6px;
+    font-weight:700;
+  }
+  h1 span{color:var(--tag);}
+  .sub{
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:32px;
+    line-height:1.5;
+  }
+  .recap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--tag);
+    border-radius:6px;
+    padding:20px 22px;
+    margin-bottom:32px;
+    font-size:14px;
+    line-height:1.7;
+  }
+  .recap code{
+    background:#1b232e;
+    padding:1px 6px;
+    border-radius:4px;
+    color:#ffb98a;
+  }
+  .recap ul{margin:10px 0 0; padding-left:18px;}
+  .recap li{margin-bottom:6px;}
+
+  .qcount{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  .question{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px 22px;
+    margin-bottom:16px;
+  }
+  .question p{
+    margin:0 0 14px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .options{display:flex; flex-direction:column; gap:8px;}
+  .opt{
+    text-align:left;
+    background:#161c25;
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:5px;
+    font-family:inherit;
+    font-size:14px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color:#3a4759;}
+  .opt.correct{
+    border-color:var(--good);
+    background:rgba(61,220,151,0.08);
+    color:var(--good);
+  }
+  .opt.incorrect{
+    border-color:var(--bad);
+    background:rgba(255,93,93,0.08);
+    color:var(--bad);
+  }
+  .opt:disabled{cursor:default;}
+
+  .score-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:14px 20px;
+    margin:28px 0;
+    font-size:14px;
+  }
+  .score-bar strong{color:var(--tag);}
+
+  .proceed{
+    display:block;
+    width:100%;
+    text-align:center;
+    text-decoration:none;
+    background:var(--tag);
+    color:#161005;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.02em;
+    padding:16px;
+    border-radius:6px;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .proceed:hover{opacity:.9; transform:translateY(-1px);}
+  .proceed:active{transform:translateY(0);}
+  .proceed:focus-visible{outline:2px solid var(--text); outline-offset:3px;}
+
+  .hint{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  
+
+  <div class="eyebrow">Before you begin</div>
+  <h1>HTML <span>Review</span></h1>
+  <p class="sub">A quick recap, then a few questions to check what stuck. Answer them, then proceed to the game.</p>
+
+  <div class="recap">
+    <strong>Quick recap</strong>
+    <ul>
+      <li>HTML stands for HyperText Markup Language &mdash; it structures content on a web page.</li>
+      <li>Elements are written as tags, usually a pair: <code>&lt;p&gt;text&lt;/p&gt;</code>.</li>
+      <li>Tags can carry attributes, like <code>&lt;a href="page.html"&gt;</code>.</li>
+      <li>Some elements are self-closing, like <code>&lt;img&gt;</code> and <code>&lt;br&gt;</code>.</li>
+      <li>Every page starts with <code>&lt;!DOCTYPE html&gt;</code> and is wrapped in <code>&lt;html&gt;</code>.</li>
+    </ul>
+  </div>
+
+  <div class="qcount">Quiz &mdash; <span id="scoreLive">0</span> / <span id="totalQ">4</span> correct</div>
+
+  <div class="question" data-q="1">
+    <p>1. Which tag is used to create a hyperlink?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">&lt;link&gt;</button>
+      <button class="opt" data-correct="true">&lt;a&gt;</button>
+      <button class="opt" data-correct="false">&lt;href&gt;</button>
+      <button class="opt" data-correct="false">&lt;nav&gt;</button>
+    </div>
+  </div>
+
+  <div class="question" data-q="2">
+    <p>2. What does the <code>src</code> attribute do on an <code>&lt;img&gt;</code> tag?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">Sets the image's size</button>
+      <button class="opt" data-correct="true">Points to the image file location</button>
+      <button class="opt" data-correct="false">Adds alt text for accessibility</button>
+      <button class="opt" data-correct="false">Sets the image's border style</button>
+    </div>
+  </div>
+
+  <div class="question" data-q="3">
+    <p>3. Which element holds the visible content of a web page?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">&lt;head&gt;</button>
+      <button class="opt" data-correct="false">&lt;meta&gt;</button>
+      <button class="opt" data-correct="true">&lt;body&gt;</button>
+      <button class="opt" data-correct="false">&lt;title&gt;</button>
+    </div>
+  </div>
+
+  <div class="question" data-q="4">
+    <p>4. Which tag correctly closes a paragraph?</p>
+    <div class="options">
+      <button class="opt" data-correct="false">&lt;paragraph/&gt;</button>
+      <button class="opt" data-correct="false">&lt;/p&gt;&lt;/p&gt;</button>
+      <button class="opt" data-correct="true">&lt;/p&gt;</button>
+      <button class="opt" data-correct="false">&lt;end-p&gt;</button>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    Score: <strong><span id="scoreFinal">0</span> / 4</strong>
+  </div>
+
+  <a class="proceed" id="proceedBtn" href="htmldragon.html">Proceed to Game &rarr;</a>
+  <p class="hint">Links to <code>game.html</code> in this same folder.</p>
+
+</div>
+
+<script>
+  let score = 0;
+  const questions = document.querySelectorAll('.question');
+
+  questions.forEach(q => {
+    const opts = q.querySelectorAll('.opt');
+    opts.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (q.dataset.answered) return;
+        q.dataset.answered = "true";
+
+        const isCorrect = btn.dataset.correct === "true";
+        if (isCorrect) {
+          score++;
+          btn.classList.add('correct');
+        } else {
+          btn.classList.add('incorrect');
+          opts.forEach(o => {
+            if (o.dataset.correct === "true") o.classList.add('correct');
+          });
+        }
+        opts.forEach(o => o.disabled = true);
+
+        document.getElementById('scoreLive').textContent = score;
+        document.getElementById('scoreFinal').textContent = score;
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn CSS — a lesson in one file</title>
+<style>
+  :root{
+    --bg:#1e1e2e;
+    --panel:#181825;
+    --line:#313244;
+    --text:#cdd6f4;
+    --dim:#7f849c;
+    --tag:#f38ba8;
+    --prop:#89b4fa;
+    --val:#a6e3a1;
+    --sel:#fab387;
+    --comment:#6c7086;
+    --amber:#f9e2af;
+    --easy:#a6e3a1;
+    --medium:#f9e2af;
+    --hard:#f38ba8;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height:1.6;
+  }
+  code, pre, .mono{
+    font-family:'Cascadia Code','Fira Code',Consolas,'Courier New',monospace;
+  }
+
+  /* ---- Title bar mimicking an editor window ---- */
+  .titlebar{
+    background:#11111b;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 16px;
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .dot{width:12px;height:12px;border-radius:50%;}
+  .dot.red{background:#f38ba8;}
+  .dot.yellow{background:#f9e2af;}
+  .dot.green{background:#a6e3a1;}
+  .titlebar .filename{
+    margin-left:12px;
+    color:var(--dim);
+    font-size:13px;
+  }
+  .titlebar .filename b{color:var(--text);font-weight:600;}
+
+  /* ---- Tab strip ---- */
+  .tabs{
+    display:flex;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    overflow-x:auto;
+    position:sticky;
+    top:41px;
+    z-index:49;
+  }
+  .tab{
+    padding:10px 18px;
+    font-size:13px;
+    color:var(--dim);
+    border-right:1px solid var(--line);
+    cursor:pointer;
+    white-space:nowrap;
+    text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .tab:hover{background:#22223a;color:var(--text);}
+  .tab.active{
+    background:var(--bg);
+    color:var(--prop);
+    border-bottom:2px solid var(--prop);
+  }
+
+  /* ---- Difficulty switcher ---- */
+  .level-bar{
+    position:sticky;
+    top:82px;
+    z-index:48;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    padding:10px 24px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .level-bar .label{
+    font-size:12px;
+    color:var(--comment);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  .level-switch{
+    display:inline-flex;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:3px;
+    gap:2px;
+  }
+  .level-btn{
+    border:none;
+    background:transparent;
+    color:var(--dim);
+    font-size:13px;
+    font-weight:600;
+    padding:7px 16px;
+    border-radius:5px;
+    cursor:pointer;
+    font-family:inherit;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:background .15s, color .15s;
+  }
+  .level-btn .swatch{width:8px;height:8px;border-radius:50%;}
+  .level-btn[data-level="easy"] .swatch{background:var(--easy);}
+  .level-btn[data-level="medium"] .swatch{background:var(--medium);}
+  .level-btn[data-level="hard"] .swatch{background:var(--hard);}
+  .level-btn:hover{color:var(--text);}
+  .level-btn.active[data-level="easy"]{background:rgba(166,227,161,.15);color:var(--easy);}
+  .level-btn.active[data-level="medium"]{background:rgba(249,226,175,.15);color:var(--medium);}
+  .level-btn.active[data-level="hard"]{background:rgba(243,139,168,.15);color:var(--hard);}
+  .level-desc{font-size:12.5px;color:var(--comment);}
+
+  .wrap{max-width:840px;margin:0 auto;padding:40px 24px 120px;}
+
+  /* ---- Hero ---- */
+  .hero{padding:32px 0 20px;}
+  .hero .eyebrow{
+    color:var(--comment);
+    font-size:13px;
+    letter-spacing:.5px;
+  }
+  .hero h1{
+    font-size:42px;
+    margin:10px 0 8px;
+    line-height:1.15;
+  }
+  .hero h1 .selchar{color:var(--sel);}
+  .hero h1 .propchar{color:var(--prop);}
+  .hero p.lede{
+    color:var(--dim);
+    font-size:17px;
+    max-width:58ch;
+  }
+
+  .btn-next{
+    display:inline-block;
+    margin-top:20px;
+    background:var(--prop);
+    color:#11111b;
+    font-weight:600;
+    font-size:14px;
+    padding:10px 18px;
+    border-radius:6px;
+    text-decoration:none;
+    transition:opacity .15s;
+  }
+  .btn-next:hover{opacity:.85;}
+
+  section{margin-top:64px;}
+  section.hidden{display:none;}
+  h2{
+    font-size:24px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:12px;
+  }
+  h2 .idx{color:var(--comment);font-size:15px;font-weight:400;}
+  h2 .pill{
+    margin-left:auto;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:20px;
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  h2 .pill.easy{background:rgba(166,227,161,.15);color:var(--easy);}
+  h2 .pill.medium{background:rgba(249,226,175,.15);color:var(--medium);}
+  h2 .pill.hard{background:rgba(243,139,168,.15);color:var(--hard);}
+  h3{font-size:16px;color:var(--prop);margin-top:28px;}
+  p{color:#dfe3f0;}
+  ul, ol{color:#dfe3f0;padding-left:22px;}
+  li{margin:6px 0;}
+
+  /* ---- Code block ---- */
+  .code{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    margin:18px 0;
+  }
+  .code .bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+    color:var(--comment);
+  }
+  .code pre{
+    margin:0;
+    padding:16px;
+    font-size:13.5px;
+    overflow-x:auto;
+  }
+  .sel{color:var(--sel);}     /* selectors */
+  .prop{color:var(--prop);}   /* property names */
+  .val{color:var(--val);}     /* values */
+  .c{color:var(--comment);}   /* comments */
+  .x{color:var(--text);}      /* punctuation / plain */
+
+  /* ---- Annotated rule anatomy ---- */
+  .anatomy{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:28px 20px 44px;
+    margin:18px 0;
+    overflow-x:auto;
+  }
+  .anatomy .line{font-size:20px;white-space:nowrap;}
+  .anatomy .part{position:relative;display:inline-block;padding-bottom:4px;}
+  .anatomy .label{
+    position:absolute;
+    top:32px;
+    left:0;
+    font-size:11px;
+    color:var(--dim);
+    white-space:normal;
+    width:110px;
+    font-family:system-ui, sans-serif;
+  }
+  .anatomy .part::after{
+    content:"";
+    position:absolute;
+    top:26px;
+    left:2px;
+    width:1px;
+    height:6px;
+    background:var(--line);
+  }
+
+  /* ---- Reference grid ---- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:20px;
+  }
+  @media (max-width:600px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+  }
+  .card .sel, .card .prop{font-size:15px;}
+  .card p{margin:8px 0 0;font-size:13.5px;color:var(--dim);}
+
+  /* ---- Box model diagram ---- */
+  .boxmodel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:24px;
+    margin:18px 0;
+    display:flex;
+    justify-content:center;
+  }
+  .bm-margin{
+    background:rgba(249,226,175,.12);
+    border:1px dashed var(--medium);
+    padding:18px;
+    text-align:center;
+    font-size:11px;
+    color:var(--medium);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  .bm-border{
+    background:rgba(166,227,161,.10);
+    border:2px solid var(--val);
+    padding:16px;
+    font-size:11px;
+    color:var(--val);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  .bm-padding{
+    background:rgba(137,180,250,.12);
+    border:1px dashed var(--prop);
+    padding:16px;
+    font-size:11px;
+    color:var(--prop);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  .bm-content{
+    background:rgba(243,139,168,.15);
+    border:1px solid var(--sel);
+    padding:18px 26px;
+    font-size:12px;
+    color:var(--sel);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+    text-align:center;
+  }
+
+  /* ---- Playground (signature element) ---- */
+  .playground{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .pg-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+    color:var(--comment);
+  }
+  .pg-bar button{
+    background:var(--prop);
+    color:#11111b;
+    border:none;
+    padding:6px 14px;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .pg-bar button:hover{opacity:.85;}
+  .pg-panes{display:flex;min-height:280px;}
+  .pg-panes .pg-col{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--line);}
+  .pg-panes .pg-col:last-child{border-right:none;}
+  .pg-panes .pg-col-label{
+    font-size:11px;
+    color:var(--comment);
+    padding:6px 12px;
+    border-bottom:1px solid var(--line);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  .pg-panes textarea{
+    flex:1;
+    background:var(--panel);
+    color:var(--text);
+    border:none;
+    padding:16px;
+    font-family:inherit;
+    font-size:13px;
+    resize:vertical;
+    outline:none;
+    line-height:1.55;
+  }
+  .pg-panes iframe{
+    flex:1;
+    border:none;
+    background:#fff;
+  }
+  @media (max-width:720px){.pg-panes{flex-direction:column;} .pg-panes .pg-col{border-right:none;border-bottom:1px solid var(--line);}}
+
+  /* ---- Checklist / recap ---- */
+  .recap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:20px 22px;
+  }
+  .recap li{list-style:none;padding-left:26px;position:relative;}
+  .recap li::before{
+    content:"✓";
+    position:absolute;
+    left:0;
+    color:var(--val);
+    font-weight:700;
+  }
+
+  footer{
+    margin-top:80px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    color:var(--comment);
+    font-size:13px;
+  }
+
+  a{color:var(--prop);}
+
+  a:focus-visible, button:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--prop);
+    outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="titlebar">
+    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+    <span class="filename"><b>lesson-01</b>.css — CSS Basics</span>
+  </div>
+  <div class="tabs">
+    <a href="#syntax" class="tab">syntax.css</a>
+    <a href="#selectors" class="tab">selectors.css</a>
+    <a href="#boxmodel" class="tab">boxmodel.css</a>
+    <a href="#layout" class="tab">layout.css</a>
+    <a href="#responsive" class="tab">responsive.css</a>
+    <a href="#playground" class="tab">playground.css</a>
+  </div>
+
+  <div class="level-bar">
+    <span class="label">// difficulty:</span>
+    <div class="level-switch" role="group" aria-label="Difficulty level">
+      <button class="level-btn active" data-level="easy" type="button"><span class="swatch"></span>Easy</button>
+      <button class="level-btn" data-level="medium" type="button"><span class="swatch"></span>Medium</button>
+      <button class="level-btn" data-level="hard" type="button"><span class="swatch"></span>Hard</button>
+    </div>
+    <span class="level-desc" id="levelDesc">Just the essentials — syntax and basic selectors.</span>
+  </div>
+
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="eyebrow">// a one-file lesson, open in any editor</div>
+      <h1>Learn <span class="selchar">CSS</span> by reading its <span class="propchar">rules</span></h1>
+      <p class="lede">CSS controls how HTML looks — color, spacing, layout, and more. Pick a difficulty above — each level builds on the last. Every example here is real, working CSS.</p>
+      <a class="btn-next" href="dragoncss-1.html">Back to: HTML Dragon →</a>
+    </div>
+
+    <section id="syntax" data-level="easy">
+      <h2><span class="idx">01</span> Basic syntax <span class="pill easy">easy</span></h2>
+      <p>A CSS rule has a <strong>selector</strong> (what to style) and a block of <strong>declarations</strong> (how to style it). Each declaration is a property, a colon, a value, and a semicolon.</p>
+
+      <div class="code">
+        <div class="bar"><span>style.css</span><span>rule</span></div>
+        <pre><span class="sel">h1</span> <span class="x">{</span>
+  <span class="prop">color</span><span class="x">:</span> <span class="val">navy</span><span class="x">;</span>
+  <span class="prop">font-size</span><span class="x">:</span> <span class="val">32px</span><span class="x">;</span>
+<span class="x">}</span></pre>
+      </div>
+
+      <h3>Linking CSS to HTML</h3>
+      <p>Put your rules in a separate file and link it from the <code class="mono">&lt;head&gt;</code>:</p>
+      <div class="code">
+        <pre><span class="sel">&lt;link</span> <span class="prop">rel</span>=<span class="val">"stylesheet"</span> <span class="prop">href</span>=<span class="val">"style.css"</span><span class="sel">&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="selectors" data-level="easy">
+      <h2><span class="idx">02</span> Selectors you'll use constantly <span class="pill easy">easy</span></h2>
+      <div class="grid mono">
+        <div class="card">
+          <div class="sel">p</div>
+          <p>Element selector — targets every <code>&lt;p&gt;</code>.</p>
+        </div>
+        <div class="card">
+          <div class="sel">.card</div>
+          <p>Class selector — targets any element with <code>class="card"</code>.</p>
+        </div>
+        <div class="card">
+          <div class="sel">#header</div>
+          <p>ID selector — targets the one element with <code>id="header"</code>.</p>
+        </div>
+        <div class="card">
+          <div class="sel">*</div>
+          <p>Universal selector — targets everything.</p>
+        </div>
+        <div class="card">
+          <div class="sel">a:hover</div>
+          <p>Pseudo-class — styles a link only while hovered.</p>
+        </div>
+        <div class="card">
+          <div class="sel">p, li</div>
+          <p>Comma groups multiple selectors under one rule.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="boxmodel" data-level="medium">
+      <h2><span class="idx">03</span> The box model <span class="pill medium">medium</span></h2>
+      <p>Every element is a rectangular box made of four layers, from the inside out: content, padding, border, and margin.</p>
+
+      <div class="boxmodel mono">
+        <div class="bm-margin">margin
+          <div class="bm-border">border
+            <div class="bm-padding">padding
+              <div class="bm-content">content</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code">
+        <pre><span class="sel">.box</span> <span class="x">{</span>
+  <span class="prop">width</span><span class="x">:</span> <span class="val">200px</span><span class="x">;</span>
+  <span class="prop">padding</span><span class="x">:</span> <span class="val">16px</span><span class="x">;</span>
+  <span class="prop">border</span><span class="x">:</span> <span class="val">2px solid black</span><span class="x">;</span>
+  <span class="prop">margin</span><span class="x">:</span> <span class="val">24px</span><span class="x">;</span>
+<span class="x">}</span></pre>
+      </div>
+      <p>By default, <code class="mono">width</code> only sets the content box — padding and border add on top. Set <code class="mono">box-sizing: border-box</code> to include them instead.</p>
+    </section>
+
+    <section id="combinators" data-level="medium">
+      <h2><span class="idx">04</span> Combinators &amp; specificity <span class="pill medium">medium</span></h2>
+      <div class="code">
+        <pre><span class="sel">nav a</span> <span class="x">{ </span><span class="c">/* any &lt;a&gt; inside &lt;nav&gt; */</span><span class="x"> }</span>
+<span class="sel">ul &gt; li</span> <span class="x">{ </span><span class="c">/* only direct &lt;li&gt; children */</span><span class="x"> }</span>
+<span class="sel">h2 + p</span> <span class="x">{ </span><span class="c">/* the &lt;p&gt; right after an &lt;h2&gt; */</span><span class="x"> }</span></pre>
+      </div>
+      <p>When two rules target the same element, the more <strong>specific</strong> selector wins: IDs beat classes, classes beat element selectors. A later rule of equal specificity overrides an earlier one.</p>
+    </section>
+
+    <section id="layout" data-level="hard">
+      <h2><span class="idx">05</span> Flexbox layout <span class="pill hard">hard</span></h2>
+      <p>Flexbox arranges children of a container in a single row or column, distributing space between them.</p>
+      <div class="code">
+        <div class="bar"><span>layout.css</span><span>flexbox</span></div>
+        <pre><span class="sel">.nav</span> <span class="x">{</span>
+  <span class="prop">display</span><span class="x">:</span> <span class="val">flex</span><span class="x">;</span>
+  <span class="prop">justify-content</span><span class="x">:</span> <span class="val">space-between</span><span class="x">;</span>
+  <span class="prop">align-items</span><span class="x">:</span> <span class="val">center</span><span class="x">;</span>
+  <span class="prop">gap</span><span class="x">:</span> <span class="val">16px</span><span class="x">;</span>
+<span class="x">}</span></pre>
+      </div>
+      <ul>
+        <li><code class="mono prop">display: flex</code> — turns on flexbox for the container.</li>
+        <li><code class="mono prop">justify-content</code> — spacing along the main axis (usually horizontal).</li>
+        <li><code class="mono prop">align-items</code> — alignment along the cross axis (usually vertical).</li>
+        <li><code class="mono prop">gap</code> — space between children, no margins needed.</li>
+      </ul>
+
+      <h3>Grid, briefly</h3>
+      <div class="code">
+        <pre><span class="sel">.gallery</span> <span class="x">{</span>
+  <span class="prop">display</span><span class="x">:</span> <span class="val">grid</span><span class="x">;</span>
+  <span class="prop">grid-template-columns</span><span class="x">:</span> <span class="val">repeat(3, 1fr)</span><span class="x">;</span>
+  <span class="prop">gap</span><span class="x">:</span> <span class="val">12px</span><span class="x">;</span>
+<span class="x">}</span></pre>
+      </div>
+      <p>Grid is better than flexbox when you need control over both rows and columns at once, like a photo gallery.</p>
+    </section>
+
+    <section id="responsive" data-level="hard">
+      <h2><span class="idx">06</span> Responsive design <span class="pill hard">hard</span></h2>
+      <p>Media queries apply rules only when the screen matches a condition, usually a max width — this is how sites adapt to phones.</p>
+      <div class="code">
+        <pre><span class="sel">.grid</span> <span class="x">{</span>
+  <span class="prop">display</span><span class="x">:</span> <span class="val">grid</span><span class="x">;</span>
+  <span class="prop">grid-template-columns</span><span class="x">:</span> <span class="val">1fr 1fr</span><span class="x">;</span>
+<span class="x">}</span>
+
+<span class="c">@media (max-width: 600px) {</span>
+  <span class="sel">.grid</span> <span class="x">{</span>
+    <span class="prop">grid-template-columns</span><span class="x">:</span> <span class="val">1fr</span><span class="x">;</span>
+  <span class="x">}</span>
+<span class="c">}</span></pre>
+      </div>
+      <p>Also worth knowing: CSS variables (<code class="mono">--accent: #89b4fa;</code>, used with <code class="mono">var(--accent)</code>) let you define a value once and reuse it everywhere.</p>
+    </section>
+
+    <section id="playground" data-level="easy">
+      <h2><span class="idx">07</span> Try it yourself</h2>
+      <p>Edit the HTML and CSS on the left. The preview on the right updates live.</p>
+
+      <div class="playground">
+        <div class="pg-bar">
+          <span>playground.css — edit me</span>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="pg-panes">
+          <div class="pg-col">
+            <div class="pg-col-label">HTML</div>
+            <textarea id="htmlEditor" spellcheck="false" aria-label="HTML editor"></textarea>
+          </div>
+          <div class="pg-col">
+            <div class="pg-col-label">CSS</div>
+            <textarea id="cssEditor" spellcheck="false" aria-label="CSS editor"></textarea>
+          </div>
+          <div class="pg-col">
+            <div class="pg-col-label">Preview</div>
+            <iframe id="preview" title="Live preview"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section data-level="easy">
+      <h2><span class="idx">08</span> Recap</h2>
+      <div class="recap">
+        <ul id="recapList">
+          <li data-level="easy">A rule = selector + declarations, each a <code class="mono">property: value;</code> pair.</li>
+          <li data-level="easy">Target elements, classes (<code class="mono">.name</code>), or IDs (<code class="mono">#name</code>).</li>
+          <li data-level="medium">Every box has content, padding, border, and margin, in that order.</li>
+          <li data-level="medium">More specific selectors win; later rules of equal specificity win.</li>
+          <li data-level="hard">Flexbox and Grid handle layout; media queries make it responsive.</li>
+          <li data-level="hard">CSS variables let you reuse a value across the whole stylesheet.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Save this file as <code class="mono">.css</code>, link it from a <code class="mono">&lt;link&gt;</code> tag in your HTML, and refresh the browser to see changes.
+    </footer>
+
+  </div>
+
+<script>
+  const starterHTML = `<div class="box">
+  <h2>Hello!</h2>
+  <p>Edit the CSS to restyle me.</p>
+</div>`;
+
+  const starterCSS = `.box {
+  background: #cdd6f4;
+  padding: 20px;
+  border-radius: 10px;
+  font-family: sans-serif;
+  text-align: center;
+}
+h2 { color: #1e66f5; }`;
+
+  const htmlEditor = document.getElementById('htmlEditor');
+  const cssEditor = document.getElementById('cssEditor');
+  const preview = document.getElementById('preview');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function render(){
+    const doc = preview.contentDocument || preview.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+      body{margin:0;font-family:system-ui,sans-serif;padding:16px;}
+      ${cssEditor.value}
+    </style></head><body>${htmlEditor.value}</body></html>`);
+    doc.close();
+  }
+
+  htmlEditor.value = starterHTML;
+  cssEditor.value = starterCSS;
+  htmlEditor.addEventListener('input', render);
+  cssEditor.addEventListener('input', render);
+  resetBtn.addEventListener('click', () => { htmlEditor.value = starterHTML; cssEditor.value = starterCSS; render(); });
+  render();
+
+  /* ---- Difficulty switcher ---- */
+  const rank = { easy: 1, medium: 2, hard: 3 };
+  const levelBtns = document.querySelectorAll('.level-btn');
+  const levelSections = document.querySelectorAll('section[data-level]');
+  const recapItems = document.querySelectorAll('#recapList li[data-level]');
+  const levelDesc = document.getElementById('levelDesc');
+  const descriptions = {
+    easy: "Just the essentials — syntax and basic selectors.",
+    medium: "Adds the box model, combinators, and specificity.",
+    hard: "Adds Flexbox, Grid, and responsive design."
+  };
+
+  function setLevel(level){
+    levelBtns.forEach(b => b.classList.toggle('active', b.dataset.level === level));
+    levelSections.forEach(s => {
+      s.classList.toggle('hidden', rank[s.dataset.level] > rank[level]);
+    });
+    recapItems.forEach(li => {
+      li.style.display = rank[li.dataset.level] > rank[level] ? 'none' : '';
+    });
+    levelDesc.textContent = descriptions[level];
+  }
+
+  levelBtns.forEach(btn => {
+    btn.addEventListener('click', () => setLevel(btn.dataset.level));
+  });
+
+  setLevel('easy');
+</script>
+
+</body>
+</html>

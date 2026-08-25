@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn HTML — a lesson in one file</title>
+<style>
+  :root{
+    --bg:#1e1e2e;
+    --panel:#181825;
+    --line:#313244;
+    --text:#cdd6f4;
+    --dim:#7f849c;
+    --tag:#f38ba8;
+    --attr:#fab387;
+    --string:#a6e3a1;
+    --accent:#89b4fa;
+    --comment:#6c7086;
+    --amber:#f9e2af;
+    --easy:#a6e3a1;
+    --medium:#f9e2af;
+    --hard:#f38ba8;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height:1.6;
+  }
+  code, pre, .mono{
+    font-family:'Cascadia Code','Fira Code',Consolas,'Courier New',monospace;
+  }
+
+  /* ---- Title bar mimicking an editor window ---- */
+  .titlebar{
+    background:#11111b;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 16px;
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    z-index:50;
+  }
+  .dot{width:12px;height:12px;border-radius:50%;}
+  .dot.red{background:#f38ba8;}
+  .dot.yellow{background:#f9e2af;}
+  .dot.green{background:#a6e3a1;}
+  .titlebar .filename{
+    margin-left:12px;
+    color:var(--dim);
+    font-size:13px;
+  }
+  .titlebar .filename b{color:var(--text);font-weight:600;}
+
+  /* ---- Tab strip ---- */
+  .tabs{
+    display:flex;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    overflow-x:auto;
+    position:sticky;
+    top:41px;
+    z-index:49;
+  }
+  .tab{
+    padding:10px 18px;
+    font-size:13px;
+    color:var(--dim);
+    border-right:1px solid var(--line);
+    cursor:pointer;
+    white-space:nowrap;
+    text-decoration:none;
+    transition:background .15s, color .15s;
+  }
+  .tab:hover{background:#22223a;color:var(--text);}
+  .tab.active{
+    background:var(--bg);
+    color:var(--accent);
+    border-bottom:2px solid var(--accent);
+  }
+
+  /* ---- Difficulty switcher ---- */
+  .level-bar{
+    position:sticky;
+    top:82px;
+    z-index:48;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    padding:10px 24px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .level-bar .label{
+    font-size:12px;
+    color:var(--comment);
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  .level-switch{
+    display:inline-flex;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:3px;
+    gap:2px;
+  }
+  .level-btn{
+    border:none;
+    background:transparent;
+    color:var(--dim);
+    font-size:13px;
+    font-weight:600;
+    padding:7px 16px;
+    border-radius:5px;
+    cursor:pointer;
+    font-family:inherit;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:background .15s, color .15s;
+  }
+  .level-btn .swatch{width:8px;height:8px;border-radius:50%;}
+  .level-btn[data-level="easy"] .swatch{background:var(--easy);}
+  .level-btn[data-level="medium"] .swatch{background:var(--medium);}
+  .level-btn[data-level="hard"] .swatch{background:var(--hard);}
+  .level-btn:hover{color:var(--text);}
+  .level-btn.active[data-level="easy"]{background:rgba(166,227,161,.15);color:var(--easy);}
+  .level-btn.active[data-level="medium"]{background:rgba(249,226,175,.15);color:var(--medium);}
+  .level-btn.active[data-level="hard"]{background:rgba(243,139,168,.15);color:var(--hard);}
+  .level-desc{font-size:12.5px;color:var(--comment);}
+
+  .wrap{max-width:840px;margin:0 auto;padding:40px 24px 120px;}
+
+  /* ---- Hero ---- */
+  .hero{padding:32px 0 20px;}
+  .hero .eyebrow{
+    color:var(--comment);
+    font-size:13px;
+    letter-spacing:.5px;
+  }
+  .hero h1{
+    font-size:42px;
+    margin:10px 0 8px;
+    line-height:1.15;
+  }
+  .hero h1 .tagchar{color:var(--tag);}
+  .hero h1 .attrchar{color:var(--attr);}
+  .hero p.lede{
+    color:var(--dim);
+    font-size:17px;
+    max-width:58ch;
+  }
+
+  .btn-next{
+    display:inline-block;
+    margin-top:20px;
+    background:var(--accent);
+    color:#11111b;
+    font-weight:600;
+    font-size:14px;
+    padding:10px 18px;
+    border-radius:6px;
+    text-decoration:none;
+    transition:opacity .15s;
+  }
+  .btn-next:hover{opacity:.85;}
+
+  section{margin-top:64px;}
+  section.hidden{display:none;}
+  h2{
+    font-size:24px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:12px;
+  }
+  h2 .idx{color:var(--comment);font-size:15px;font-weight:400;}
+  h2 .pill{
+    margin-left:auto;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:20px;
+    font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  }
+  h2 .pill.easy{background:rgba(166,227,161,.15);color:var(--easy);}
+  h2 .pill.medium{background:rgba(249,226,175,.15);color:var(--medium);}
+  h2 .pill.hard{background:rgba(243,139,168,.15);color:var(--hard);}
+  h3{font-size:16px;color:var(--accent);margin-top:28px;}
+  p{color:#dfe3f0;}
+  ul, ol{color:#dfe3f0;padding-left:22px;}
+  li{margin:6px 0;}
+
+  /* ---- Code block ---- */
+  .code{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    margin:18px 0;
+  }
+  .code .bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+    color:var(--comment);
+  }
+  .code pre{
+    margin:0;
+    padding:16px;
+    font-size:13.5px;
+    overflow-x:auto;
+  }
+  .t{color:var(--tag);}      /* tag names */
+  .a{color:var(--attr);}     /* attribute names */
+  .s{color:var(--string);}   /* strings */
+  .c{color:var(--comment);}  /* comments */
+  .x{color:var(--text);}     /* plain text content */
+
+  /* ---- Annotated tag anatomy ---- */
+  .anatomy{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:28px 20px 44px;
+    margin:18px 0;
+    overflow-x:auto;
+  }
+  .anatomy .line{font-size:20px;white-space:nowrap;}
+  .anatomy .part{position:relative;display:inline-block;padding-bottom:4px;}
+  .anatomy .label{
+    position:absolute;
+    top:32px;
+    left:0;
+    font-size:11px;
+    color:var(--dim);
+    white-space:normal;
+    width:110px;
+    font-family:system-ui, sans-serif;
+  }
+  .anatomy .part::after{
+    content:"";
+    position:absolute;
+    top:26px;
+    left:2px;
+    width:1px;
+    height:6px;
+    background:var(--line);
+  }
+
+  /* ---- Element reference grid ---- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:20px;
+  }
+  @media (max-width:600px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+  }
+  .card .t{font-size:15px;}
+  .card p{margin:8px 0 0;font-size:13.5px;color:var(--dim);}
+
+  /* ---- Playground (signature element) ---- */
+  .playground{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .pg-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+    color:var(--comment);
+  }
+  .pg-bar button{
+    background:var(--accent);
+    color:#11111b;
+    border:none;
+    padding:6px 14px;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .pg-bar button:hover{opacity:.85;}
+  .pg-panes{display:flex;min-height:260px;}
+  .pg-panes textarea{
+    flex:1;
+    background:var(--panel);
+    color:var(--text);
+    border:none;
+    border-right:1px solid var(--line);
+    padding:16px;
+    font-family:inherit;
+    font-size:13.5px;
+    resize:vertical;
+    outline:none;
+    line-height:1.55;
+  }
+  .pg-panes iframe{
+    flex:1;
+    border:none;
+    background:#fff;
+  }
+  @media (max-width:640px){.pg-panes{flex-direction:column;} .pg-panes textarea{border-right:none;border-bottom:1px solid var(--line);}}
+
+  /* ---- Checklist / recap ---- */
+  .recap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:20px 22px;
+  }
+  .recap li{list-style:none;padding-left:26px;position:relative;}
+  .recap li::before{
+    content:"✓";
+    position:absolute;
+    left:0;
+    color:var(--string);
+    font-weight:700;
+  }
+
+  footer{
+    margin-top:80px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    color:var(--comment);
+    font-size:13px;
+  }
+
+  a{color:var(--accent);}
+
+  /* keyboard focus visibility */
+  a:focus-visible, button:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="titlebar">
+    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+    <span class="filename"><b>lesson-01</b>.html — HTML Basics</span>
+  </div>
+  <div class="tabs">
+    <a href="#structure" class="tab">structure.html</a>
+    <a href="#anatomy" class="tab">anatomy.html</a>
+    <a href="#elements" class="tab">elements.html</a>
+    <a href="#attributes" class="tab">attributes.html</a>
+    <a href="#semantic" class="tab">semantic.html</a>
+    <a href="#forms" class="tab">forms.html</a>
+    <a href="#playground" class="tab">playground.html</a>
+  </div>
+
+  <div class="level-bar">
+    <span class="label">// difficulty:</span>
+    <div class="level-switch" role="group" aria-label="Difficulty level">
+      <button class="level-btn active" data-level="easy" type="button"><span class="swatch"></span>Easy</button>
+      <button class="level-btn" data-level="medium" type="button"><span class="swatch"></span>Medium</button>
+      <button class="level-btn" data-level="hard" type="button"><span class="swatch"></span>Hard</button>
+    </div>
+    <span class="level-desc" id="levelDesc">Just the essentials — structure and the tags you'll use every day.</span>
+  </div>
+
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="eyebrow">// a one-file lesson, open in any editor</div>
+      <h1>Learn <span class="tagchar">&lt;HTML&gt;</span> by reading its <span class="attrchar">source</span></h1>
+      <p class="lede">HTML is the markup language that gives web content its structure. Pick a difficulty above — each level builds on the last. This page is itself written entirely in HTML, so every example is real, working markup.</p>
+      <a class="btn-next" href="htmldragon.html">Next up: HTML Dragon →</a>
+    </div>
+
+    <section id="structure" data-level="easy">
+      <h2><span class="idx">01</span> The document skeleton <span class="pill easy">easy</span></h2>
+      <p>Every HTML page starts from the same skeleton. Nothing shows on screen without it — think of it as the file's table of contents for the browser.</p>
+
+      <div class="code">
+        <div class="bar"><span>index.html</span><span>skeleton</span></div>
+        <pre><span class="c">&lt;!-- 1. Tells the browser this is HTML5 --&gt;</span>
+<span class="t">&lt;!DOCTYPE html&gt;</span>
+<span class="t">&lt;html</span> <span class="a">lang</span>=<span class="s">"en"</span><span class="t">&gt;</span>
+  <span class="t">&lt;head&gt;</span>
+    <span class="c">&lt;!-- Metadata: not shown, but read by the browser --&gt;</span>
+    <span class="t">&lt;meta</span> <span class="a">charset</span>=<span class="s">"UTF-8"</span><span class="t">&gt;</span>
+    <span class="t">&lt;title&gt;</span><span class="x">My Page</span><span class="t">&lt;/title&gt;</span>
+  <span class="t">&lt;/head&gt;</span>
+  <span class="t">&lt;body&gt;</span>
+    <span class="c">&lt;!-- Everything visible goes here --&gt;</span>
+    <span class="t">&lt;h1&gt;</span><span class="x">Hello, world!</span><span class="t">&lt;/h1&gt;</span>
+  <span class="t">&lt;/body&gt;</span>
+<span class="t">&lt;/html&gt;</span></pre>
+      </div>
+
+      <ul>
+        <li><code class="mono t">&lt;!DOCTYPE html&gt;</code> — always the first line. Declares HTML5.</li>
+        <li><code class="mono t">&lt;html&gt;</code> — wraps the whole document.</li>
+        <li><code class="mono t">&lt;head&gt;</code> — info about the page (title, links, meta tags). Nothing here is visible.</li>
+        <li><code class="mono t">&lt;body&gt;</code> — everything the visitor actually sees.</li>
+      </ul>
+    </section>
+
+    <section id="elements" data-level="easy">
+      <h2><span class="idx">02</span> Elements you'll use constantly <span class="pill easy">easy</span></h2>
+      <div class="grid mono">
+        <div class="card">
+          <div class="t">&lt;h1&gt; … &lt;h6&gt;</div>
+          <p>Headings, largest to smallest. Use one <code>&lt;h1&gt;</code> per page.</p>
+        </div>
+        <div class="card">
+          <div class="t">&lt;p&gt;</div>
+          <p>A paragraph of text.</p>
+        </div>
+        <div class="card">
+          <div class="t">&lt;a href="…"&gt;</div>
+          <p>A link to another page or section.</p>
+        </div>
+        <div class="card">
+          <div class="t">&lt;img src="…"&gt;</div>
+          <p>Embeds an image.</p>
+        </div>
+        <div class="card">
+          <div class="t">&lt;ul&gt; / &lt;ol&gt; / &lt;li&gt;</div>
+          <p>Unordered, ordered lists, and their list items.</p>
+        </div>
+        <div class="card">
+          <div class="t">&lt;div&gt;</div>
+          <p>A generic box for grouping content.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="anatomy" data-level="medium">
+      <h2><span class="idx">03</span> Anatomy of a tag <span class="pill medium">medium</span></h2>
+      <p>Most HTML content is written as an <strong>element</strong>: an opening tag, some content, and a closing tag. Attributes live inside the opening tag and add extra detail.</p>
+
+      <div class="anatomy mono">
+        <div class="line">
+          <span class="part t">&lt;a<span class="label">opening tag</span></span
+          ><span class="part x"> </span
+          ><span class="part a">href<span class="label">attribute name</span></span
+          ><span class="part x">=</span
+          ><span class="part s">"page.html"<span class="label">attribute value, in quotes</span></span
+          ><span class="part t">&gt;</span
+          ><span class="part x">Click here<span class="label">content — what the visitor sees/reads</span></span
+          ><span class="part t">&lt;/a&gt;<span class="label">closing tag — note the slash</span></span>
+        </div>
+      </div>
+
+      <h3>Self-closing elements</h3>
+      <p>A few elements carry no content, so they don't need a closing tag:</p>
+      <div class="code">
+        <pre><span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"cat.jpg"</span> <span class="a">alt</span>=<span class="s">"A sleeping cat"</span><span class="t">&gt;</span>
+<span class="t">&lt;br&gt;</span>
+<span class="t">&lt;hr&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="attributes" data-level="medium">
+      <h2><span class="idx">04</span> Attributes <span class="pill medium">medium</span></h2>
+      <p>Attributes sit inside the opening tag and configure the element. Format is always <code class="mono">name="value"</code>.</p>
+      <div class="code">
+        <pre><span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"https://example.com"</span> <span class="a">target</span>=<span class="s">"_blank"</span><span class="t">&gt;</span><span class="x">Visit site</span><span class="t">&lt;/a&gt;</span>
+
+<span class="t">&lt;input</span> <span class="a">type</span>=<span class="s">"email"</span> <span class="a">placeholder</span>=<span class="s">"you@example.com"</span> <span class="a">required</span><span class="t">&gt;</span></pre>
+      </div>
+      <p>Common ones worth knowing: <code class="mono">id</code>, <code class="mono">class</code> (used by CSS), <code class="mono">src</code>, <code class="mono">href</code>, and <code class="mono">alt</code>.</p>
+
+      <h3>Nesting elements correctly</h3>
+      <p>Tags must close in the reverse order they opened — like matching brackets.</p>
+      <div class="code">
+        <pre><span class="c">&lt;!-- ✅ correctly nested --&gt;</span>
+<span class="t">&lt;p&gt;</span><span class="x">Some </span><span class="t">&lt;strong&gt;</span><span class="x">bold</span><span class="t">&lt;/strong&gt;</span><span class="x"> text</span><span class="t">&lt;/p&gt;</span>
+
+<span class="c">&lt;!-- ❌ crossed tags — invalid --&gt;</span>
+<span class="t">&lt;p&gt;</span><span class="x">Some </span><span class="t">&lt;strong&gt;</span><span class="x">bold</span><span class="t">&lt;/p&gt;</span><span class="x">text</span><span class="t">&lt;/strong&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="semantic" data-level="hard">
+      <h2><span class="idx">05</span> Semantic HTML <span class="pill hard">hard</span></h2>
+      <p>Instead of wrapping everything in generic <code class="mono">&lt;div&gt;</code>s, semantic tags describe what a section of the page <em>means</em> — which helps screen readers, SEO, and other developers reading your code.</p>
+      <div class="code">
+        <div class="bar"><span>semantic.html</span><span>layout</span></div>
+        <pre><span class="t">&lt;header&gt;</span><span class="x">Site logo and nav</span><span class="t">&lt;/header&gt;</span>
+<span class="t">&lt;nav&gt;</span><span class="x">Main navigation links</span><span class="t">&lt;/nav&gt;</span>
+<span class="t">&lt;main&gt;</span>
+  <span class="t">&lt;article&gt;</span>
+    <span class="t">&lt;h2&gt;</span><span class="x">Post title</span><span class="t">&lt;/h2&gt;</span>
+    <span class="t">&lt;p&gt;</span><span class="x">Post content…</span><span class="t">&lt;/p&gt;</span>
+  <span class="t">&lt;/article&gt;</span>
+  <span class="t">&lt;aside&gt;</span><span class="x">Related links</span><span class="t">&lt;/aside&gt;</span>
+<span class="t">&lt;/main&gt;</span>
+<span class="t">&lt;footer&gt;</span><span class="x">Copyright, contact info</span><span class="t">&lt;/footer&gt;</span></pre>
+      </div>
+      <ul>
+        <li><code class="mono t">&lt;header&gt;</code> / <code class="mono t">&lt;footer&gt;</code> — top and bottom of a page or section.</li>
+        <li><code class="mono t">&lt;nav&gt;</code> — a block of navigation links.</li>
+        <li><code class="mono t">&lt;main&gt;</code> — the primary content, used once per page.</li>
+        <li><code class="mono t">&lt;article&gt;</code> — self-contained content (a post, a card).</li>
+        <li><code class="mono t">&lt;aside&gt;</code> — tangential content, like a sidebar.</li>
+      </ul>
+
+      <h3>Accessibility basics</h3>
+      <p>A few habits that make pages usable for everyone, including screen-reader users:</p>
+      <div class="code">
+        <pre><span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"chart.png"</span> <span class="a">alt</span>=<span class="s">"Sales rose 12% in Q3"</span><span class="t">&gt;</span>
+<span class="t">&lt;button</span> <span class="a">aria-label</span>=<span class="s">"Close dialog"</span><span class="t">&gt;</span><span class="x">×</span><span class="t">&lt;/button&gt;</span>
+<span class="t">&lt;label</span> <span class="a">for</span>=<span class="s">"email"</span><span class="t">&gt;</span><span class="x">Email</span><span class="t">&lt;/label&gt;</span>
+<span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"email"</span> <span class="a">type</span>=<span class="s">"email"</span><span class="t">&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="forms" data-level="hard">
+      <h2><span class="idx">06</span> Forms <span class="pill hard">hard</span></h2>
+      <p>Forms collect input and send it somewhere. Every field needs a <code class="mono">name</code> so its value gets submitted.</p>
+      <div class="code">
+        <div class="bar"><span>signup.html</span><span>form</span></div>
+        <pre><span class="t">&lt;form</span> <span class="a">action</span>=<span class="s">"/submit"</span> <span class="a">method</span>=<span class="s">"POST"</span><span class="t">&gt;</span>
+  <span class="t">&lt;label</span> <span class="a">for</span>=<span class="s">"name"</span><span class="t">&gt;</span><span class="x">Name</span><span class="t">&lt;/label&gt;</span>
+  <span class="t">&lt;input</span> <span class="a">id</span>=<span class="s">"name"</span> <span class="a">name</span>=<span class="s">"name"</span> <span class="a">type</span>=<span class="s">"text"</span> <span class="a">required</span><span class="t">&gt;</span>
+
+  <span class="t">&lt;label</span> <span class="a">for</span>=<span class="s">"plan"</span><span class="t">&gt;</span><span class="x">Plan</span><span class="t">&lt;/label&gt;</span>
+  <span class="t">&lt;select</span> <span class="a">id</span>=<span class="s">"plan"</span> <span class="a">name</span>=<span class="s">"plan"</span><span class="t">&gt;</span>
+    <span class="t">&lt;option&gt;</span><span class="x">Free</span><span class="t">&lt;/option&gt;</span>
+    <span class="t">&lt;option&gt;</span><span class="x">Pro</span><span class="t">&lt;/option&gt;</span>
+  <span class="t">&lt;/select&gt;</span>
+
+  <span class="t">&lt;button</span> <span class="a">type</span>=<span class="s">"submit"</span><span class="t">&gt;</span><span class="x">Sign up</span><span class="t">&lt;/button&gt;</span>
+<span class="t">&lt;/form&gt;</span></pre>
+      </div>
+      <p>Useful <code class="mono">type</code> values for <code class="mono">&lt;input&gt;</code>: <code class="mono">text</code>, <code class="mono">email</code>, <code class="mono">password</code>, <code class="mono">checkbox</code>, <code class="mono">radio</code>, <code class="mono">date</code>, <code class="mono">number</code>.</p>
+    </section>
+
+    <section id="playground" data-level="easy">
+      <h2><span class="idx">07</span> Try it yourself</h2>
+      <p>Edit the HTML on the left. The preview on the right updates live — this is exactly the loop you'll use in VS Code with a live preview extension.</p>
+
+      <div class="playground">
+        <div class="pg-bar">
+          <span>playground.html — edit me</span>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="pg-panes">
+          <textarea id="editor" spellcheck="false" aria-label="HTML editor"></textarea>
+          <iframe id="preview" title="Live preview"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section data-level="easy">
+      <h2><span class="idx">08</span> Recap</h2>
+      <div class="recap">
+        <ul id="recapList">
+          <li data-level="easy">Every page starts with the <code class="mono">&lt;!DOCTYPE html&gt;</code> → <code class="mono">&lt;html&gt;</code> → <code class="mono">&lt;head&gt;</code>/<code class="mono">&lt;body&gt;</code> skeleton.</li>
+          <li data-level="easy">Elements = opening tag + content + closing tag.</li>
+          <li data-level="medium">Attributes configure an element and live inside its opening tag.</li>
+          <li data-level="medium">Tags must close in the reverse order they opened.</li>
+          <li data-level="hard">Semantic tags like <code class="mono">&lt;main&gt;</code> and <code class="mono">&lt;article&gt;</code> describe meaning, not just layout.</li>
+          <li data-level="hard">Forms need a <code class="mono">name</code> on each field to submit its value.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Save this file as <code class="mono">.html</code>, open it in VS Code, and use "Open with Live Server" (or just double-click it) to see it in a browser.
+    </footer>
+
+  </div>
+
+<script>
+  const starter = `<h1>Hello, world!</h1>
+<p>This is a paragraph I wrote myself.</p>
+<a href="https://example.com">A link</a>
+<ul>
+  <li>First item</li>
+  <li>Second item</li>
+</ul>`;
+
+  const editor = document.getElementById('editor');
+  const preview = document.getElementById('preview');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function render(){
+    const doc = preview.contentDocument || preview.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+      body{font-family:system-ui,sans-serif;color:#1e1e2e;padding:16px;line-height:1.5;}
+      a{color:#1e66f5;}
+    </style></head><body>${editor.value}</body></html>`);
+    doc.close();
+  }
+
+  editor.value = starter;
+  editor.addEventListener('input', render);
+  resetBtn.addEventListener('click', () => { editor.value = starter; render(); });
+  render();
+
+  /* ---- Difficulty switcher ---- */
+  const rank = { easy: 1, medium: 2, hard: 3 };
+  const levelBtns = document.querySelectorAll('.level-btn');
+  const levelSections = document.querySelectorAll('section[data-level]');
+  const recapItems = document.querySelectorAll('#recapList li[data-level]');
+  const levelDesc = document.getElementById('levelDesc');
+  const descriptions = {
+    easy: "Just the essentials — structure and the tags you'll use every day.",
+    medium: "Adds tag anatomy, attributes, and how nesting works.",
+    hard: "Adds semantic layout, accessibility basics, and forms."
+  };
+
+  function setLevel(level){
+    levelBtns.forEach(b => b.classList.toggle('active', b.dataset.level === level));
+    levelSections.forEach(s => {
+      s.classList.toggle('hidden', rank[s.dataset.level] > rank[level]);
+    });
+    recapItems.forEach(li => {
+      li.style.display = rank[li.dataset.level] > rank[level] ? 'none' : '';
+    });
+    levelDesc.textContent = descriptions[level];
+  }
+
+  levelBtns.forEach(btn => {
+    btn.addEventListener('click', () => setLevel(btn.dataset.level));
+  });
+
+  setLevel('easy');
+</script>
+
+</body>
+</html>
